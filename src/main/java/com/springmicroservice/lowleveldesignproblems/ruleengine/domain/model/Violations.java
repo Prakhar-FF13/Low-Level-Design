@@ -1,4 +1,4 @@
-package com.springmicroservice.lowleveldesignproblems.ruleengine.interfaces;
+package com.springmicroservice.lowleveldesignproblems.ruleengine.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

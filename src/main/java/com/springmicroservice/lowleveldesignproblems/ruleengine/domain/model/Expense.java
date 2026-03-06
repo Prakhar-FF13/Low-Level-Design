@@ -1,4 +1,4 @@
-package com.springmicroservice.lowleveldesignproblems.ruleengine.models;
+package com.springmicroservice.lowleveldesignproblems.ruleengine.domain.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
