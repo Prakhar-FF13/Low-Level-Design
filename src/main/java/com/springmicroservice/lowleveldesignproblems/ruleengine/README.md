@@ -69,6 +69,9 @@ expenses, vendor blacklists, monthly budget caps).
 - JPA repository for DB interaction
 - not used in this problem.
 
+##### test package
+- present in test/java/com/springmicroservice/lowleveldesignproblems/ruleengine
+
 ### What this problem teaches:
 - SOLID principles like
   - Dependency Injection (depending on Rules interface)
