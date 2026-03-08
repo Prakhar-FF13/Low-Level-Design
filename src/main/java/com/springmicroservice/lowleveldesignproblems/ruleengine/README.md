@@ -1,92 +1,112 @@
-# Rule Engine LLD
+# Rule Engine Low-Level Design (LLD)
 
-## Requirements:
+This project demonstrates the Low-Level Design (LLD) for a **Business Expense Rule Engine**. It is scoped to focus on extensibility, decoupled architecture, and applying SOLID principles to evaluate corporate expenses against dynamic policies.
 
-You are tasked with designing a system that evaluates business expenses submitted
-by employees.
-Managers can define policies (rules) to control expenses, ensuring employees do not
-misuse corporate cards or exceed allowances.
-Your goal is to build a rules engine that:
-1. Evaluates individual expenses against a set of rules.
-2. Evaluates aggregated trip-level expenses against a set of rules.
-3. Flags any violations clearly.
+## Design Requirements
+You are tasked with designing a system that evaluates business expenses submitted by employees. Managers can define rules to control expenses, ensuring employees do not misuse corporate cards. The engine must:
+1. Evaluate individual expenses against single-expense rules.
+2. Evaluate aggregated trip-level expenses against multi-expense rules.
+3. Flag any violations clearly and aggregate them.
 
-A list of rules to evaluate. Rules can be applied at:
-Expense level (per individual expense).
-Trip level (across all expenses belonging to a trip).
-
-#### Basic Rules
-Start with the following rules:
+### Active Rules to Evaluate
+**Single-Expense Rules:**
 1. No restaurant expense can exceed $75.
 2. No airfare expenses are allowed.
 3. No entertainment expenses are allowed. 
 4. No single expense can exceed $250.
 
-#### Extended Rules
-Later, add support for trip-level rules such as:
+**Multi-Expense (Trip-Level) Rules:**
 1. A trip cannot exceed $2000 in total expenses. 
 2. Total meal (restaurant) expenses per trip cannot exceed $1000.
 
-#### Additional Notes
-The system should be extensible: managers may eventually have hundreds of
-rules, so adding rules should not require rewriting the core evaluation logic.
-The same framework should support future custom rules (e.g., weekend-only
-expenses, vendor blacklists, monthly budget caps).
+### Out of Scope (For an Interview Scenario)
+- Prioritized execution of rules or complex Rule Strategizing (Rules execute concurrently/sequentially as provided).
+- Database interactions (Rules are generated in-memory for testing).
+- External REST API dependencies.
 
-### Out of Scope
-- No priority based execution of rules / no strategy of rule executions. We are going with execution of rules in the order we get them.
-- No DB interactions.
-- No Rest API interactions, simple JUnit testing would do.
-- No dynamic rules based on expenses provided i.e. static rules provided at creation are used.
+---
 
-### Non functional
-- SOLID principles
-- Extensible - should be easy to add new rules later on
+## The Solution: Extensible Rule Pattern
 
-## Solution
+The core challenge of a Rule Engine is scalability. Hardcoding validation checks (e.g., `if (expense.type == AIRFARE) return false`) inside the `ExpenseService` violates the Open/Closed Principle. If a manager adds 100 new rules, the main service class becomes massive, fragile, and impossible to test.
 
-### Structure:
+We solve this by separating the validation logic from the orchestrator. The Engine blindly accepts a `List<Rules>` and an `Expense` object, running through the rules dynamically.
 
-##### api package:
-- not used here but can host the controller layer if exposing REST APIs
-- has demo code to show how it can be done.
-- has spring beans defined for creation of controller.
+### UML Class Diagram
 
-##### application package:
-- hosts orchestrating layer like services.
-- not used here as we are not exposing any controllers and stuff.
-- has spring beans defined for creation of services.
+Below is the Unified Modeling Language (UML) Class Diagram representing the Extensible Rule Pattern implementation:
 
-##### domain package:
-- hosts the actual logic of the problem.
-- does not use any spring related annotations to allow unit testing easily.
-- subpackages
-  - **engine**: hosts main class / entry point.
-  - **model**: hosts models like Expense, Violations etc. The classes which hold data.
-  - **rule**: contains rules interfaces and their implementations.
+```mermaid
+classDiagram
+    class ExpenseEvaluatorEngine {
+        -List~SingleExpenseRule~ singleExpenseRules
+        -List~MultiExpenseRule~ multiExpenseRules
+        +evaluateSingleExpense(Expense expense) List~Violations~
+        +evaluateTripExpenses(List~Expense~ expenses) List~Violations~
+    }
 
-##### repository package:
-- JPA repository for DB interaction
-- not used in this problem.
+    class SingleExpenseRule {
+        <<interface>>
+        +evaluate(Expense expense) Optional~Violations~
+    }
 
-##### test package
-- present in test/java/com/springmicroservice/lowleveldesignproblems/ruleengine
+    class MultiExpenseRule {
+        <<interface>>
+        +evaluate(List~Expense~ expenses) Optional~Violations~
+    }
 
-### What this problem teaches:
-- SOLID principles like
-  - Dependency Injection (depending on Rules interface)
-  - Open Closed Principles (No modifications to main class handling validation of expenses when new rules are added)
-  - Single Responsibility
-  - Liskov Substitution (not used here)
-  - Interface Segregation (sort of as we had 2 interfaces for different things, not a combined one)
-- Java streams
-- Clean Code
-  - small functions
-  - clear separation of domain and spring wrapper.
+    class Expense {
+        -double amount
+        -ExpenseType type
+        -String description
+    }
 
-## Remarks:
+    class Violations {
+        -String message
+    }
 
-- Easy problem
-- Structuring is probably more important in this problem.
-- Adding rule execution strategy could make it challenging. Might introduce strategy pattern.
+    class AirfareExpenseRule {
+        +evaluate(Expense expense) Optional~Violations~
+    }
 
+    class MaxRestaurantsAmountRule {
+        +evaluate(Expense expense) Optional~Violations~
+    }
+    
+    class MaxTripAmountRule {
+        +evaluate(List~Expense~ expenses) Optional~Violations~
+    }
+
+    ExpenseEvaluatorEngine --> SingleExpenseRule : evaluates
+    ExpenseEvaluatorEngine --> MultiExpenseRule : evaluates
+    ExpenseEvaluatorEngine ..> Expense : consumes
+    ExpenseEvaluatorEngine ..> Violations : produces
+
+    SingleExpenseRule <|.. AirfareExpenseRule : implements
+    SingleExpenseRule <|.. MaxRestaurantsAmountRule : implements
+    MultiExpenseRule <|.. MaxTripAmountRule : implements
+```
+
+### The Component Structure
+
+#### 1. The Engine (`ExpenseEvaluatorEngine.java`)
+This acts as the orchestrator. It is constructed with predefined lists of `SingleExpenseRule` and `MultiExpenseRule` dependencies. When an incoming evaluation request arrives:
+- It streams through the injected rules.
+- It aggregates any returned `Violations`.
+- **Key Takeaway**: The engine *never* has to change when new business rules are added.
+
+#### 2. The Rule Interfaces (`SingleExpenseRule.java`, `MultiExpenseRule.java`)
+These interfaces define the contract that every specific rule must follow. This satisfies the Interface Segregation Principle by ensuring rules that only act on single expenses do not have to implement boilerplate for trip-level lists.
+
+#### 3. The Concrete Rules
+These classes implement the logic for one specific, isolated business requirement:
+*   `AirfareExpenseRule`: Checks if `type == AIRFARE`.
+*   `MaxRestaurantsAmountRule`: Checks if `type == RESTAURANT` and `amount > 75`.
+*   `MaxTripAmountRule`: Sums all expenses and checks if `total > 2000`.
+
+### Why this design excels for LLD Interviews:
+*   **SOLID Principles Masterclass**: 
+    *   **Dependency Injection**: The Engine depends entirely on abstractions (`Interfaces`), injecting concrete rules during instantiation.
+    *   **Open/Closed Principle**: You can add customized rules (e.g. `WeekendOnlyRule`) forever by simply passing a new class into the Engine, without modifying the Engine's source code.
+    *   **Single Responsibility Principle**: Every rule is highly isolated. If the restaurant cap changes from $75 to $100, only the `MaxRestaurantsAmountRule` is touched.
+*   **Clean Testability**: You do not have to test the engine with massive payloads. You can write simple JUnit tests for individual Rule behaviors, and another for checking the Engine's aggregator capability using mock lists.
