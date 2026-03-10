@@ -374,11 +374,35 @@ sequenceDiagram
     CacheImpl-->>Client: (void return)
 ```
 
-#### Integration with `PersistenceStrategy`
-The `CacheImpl` acts as a middleman and uses the injected `PersistenceStrategy` in three critical places to ensure the database perpetually matches the Volatile Memory:
-1. **During a `put()` operation (Saving to DB)**: When new data is added, `CacheImpl` simultaneously writes it to volatile `Storage` and the `PersistenceStrategy`.
-2. **During Eviction (Deleting from DB)**: When the cache hits its capacity limits, the victim key determined by the Eviction Policy is wiped from both memory and the database.
-3. **During TTL Garbage Collection (Reaper cleanup)**: When the background Reaper thread finds a lazily expired item, it wipes it from both locations.
+#### Integration with `PersistenceStrategy` (Tandem Execution)
+The `CacheImpl` acts as a middleman orchestrating both the Volatile Memory (`Storage`) and Durable Disk (`PersistenceStrategy`). They work in **tandem** under the safety of the `ReentrantReadWriteLock`.
+
+**1. During a `put()` operation (Saving tandemly)**
+When new data is inserted, `CacheImpl` seamlessly writes it to volatile RAM and the Database sequentially.
+```java
+// 1. ADD TO MEMORY (RAM)
+storage.add(key, entry);
+evictionPolicy.keyAccessed(key);
+
+// 2. ADD TO PERSISTENCE (DATABASE)
+persistenceStrategy.save(CacheEntity.builder()
+        .id(String.valueOf(key))
+        .value(String.valueOf(value))
+        .expiryTime(entry.getExpiryTime())
+        .build());
+```
+
+**2. During Eviction (Deleting tandemly)**
+When the Cache hits its capacity limit, a Victim Key is chosen. It is immediately scrubbed from both environments.
+```java
+K victimKey = evictionPolicy.evictKey();
+if (victimKey != null) {
+    // 1. DELETE FROM MEMORY (RAM)
+    storage.remove(victimKey);
+    // 2. DELETE FROM PERSISTENCE (DATABASE)
+    persistenceStrategy.delete(String.valueOf(victimKey));
+}
+```
 
 Because the `CacheImpl` accepts the generic `PersistenceStrategy` interface, it doesn't know if it's using the synchronous `WriteThrough` or the asynchronous `WriteBack`. Changing how the Cache talks to H2 is just a one-word change on initialization via the `CacheFactory`!
 
