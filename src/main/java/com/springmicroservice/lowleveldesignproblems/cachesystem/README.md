@@ -303,6 +303,77 @@ private final ReadWriteLock lock = new ReentrantReadWriteLock();
 ```
 We chose `ReentrantReadWriteLock` over `synchronized`. Why? Memory caching is heavily read-dominant. 100 threads can instantly hold a `ReadLock` concurrently. On the contrary, when a user issues `get()` or `put()`, it moves elements inside our Policy Linked Lists. This requires mutability, so we secure a `WriteLock()`. When a `WriteLock` triggers, it halts the universe until the mutation completes, ensuring zero corrupted Linked List pointers. 
 
+#### The Flow of `put()` and `get()` (Sequence Diagrams)
+
+To fully comprehend how `CacheImpl` orchestrates the interfaces, let's look at the exact chronological sequence of events.
+
+**Scenario 1: `cache.get(key)`**
+This shows what happens when a User requests data that exists and is not expired.
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant CacheImpl
+    participant ReentrantReadWriteLock
+    participant InMemoryStorage
+    participant CacheEntry
+    participant EvictionPolicy
+
+    Client->>CacheImpl: get("User1")
+    CacheImpl->>ReentrantReadWriteLock: lock.writeLock().lock()
+    
+    CacheImpl->>InMemoryStorage: get("User1")
+    InMemoryStorage-->>CacheImpl: Returns CacheEntry object
+    
+    CacheImpl->>CacheEntry: isExpired()
+    CacheEntry-->>CacheImpl: false
+    
+    CacheImpl->>EvictionPolicy: keyAccessed("User1")
+    Note over EvictionPolicy: Moves "User1" to MRU position (if LRU)
+    
+    CacheImpl->>ReentrantReadWriteLock: lock.writeLock().unlock()
+    CacheImpl-->>Client: Optional.of("ProfileData")
+```
+
+**Scenario 2: `cache.put(key, value)` with Eviction**
+This sequence shows the critical path when inserting data into a *full* cache. Notice how the Cache defers the "Who to kill" logic to the Policy, and the "How to save" logic to the Strategy.
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant CacheImpl
+    participant ReentrantReadWriteLock
+    participant InMemoryStorage
+    participant EvictionPolicy
+    participant PersistenceStrategy
+
+    Client->>CacheImpl: put("User5", "NewData")
+    CacheImpl->>ReentrantReadWriteLock: lock.writeLock().lock()
+    
+    CacheImpl->>InMemoryStorage: get("User5")
+    InMemoryStorage-->>CacheImpl: NotFoundException
+    
+    CacheImpl->>InMemoryStorage: isFull()
+    InMemoryStorage-->>CacheImpl: true
+    
+    Note over CacheImpl: Cache is full, trigger Eviction Phase
+    
+    CacheImpl->>EvictionPolicy: evictKey()
+    EvictionPolicy-->>CacheImpl: Returns Victim Key: "User1"
+    
+    CacheImpl->>InMemoryStorage: remove("User1")
+    CacheImpl->>PersistenceStrategy: delete("User1")
+    
+    Note over CacheImpl: Space created, trigger Insertion Phase
+    
+    CacheImpl->>InMemoryStorage: add("User5", CacheEntry)
+    CacheImpl->>EvictionPolicy: keyAccessed("User5")
+    CacheImpl->>PersistenceStrategy: save(CacheEntity)
+    
+    CacheImpl->>ReentrantReadWriteLock: lock.writeLock().unlock()
+    CacheImpl-->>Client: (void return)
+```
+
 #### Integration with `PersistenceStrategy`
 The `CacheImpl` acts as a middleman and uses the injected `PersistenceStrategy` in three critical places to ensure the database perpetually matches the Volatile Memory:
 1. **During a `put()` operation (Saving to DB)**: When new data is added, `CacheImpl` simultaneously writes it to volatile `Storage` and the `PersistenceStrategy`.
@@ -311,19 +382,7 @@ The `CacheImpl` acts as a middleman and uses the injected `PersistenceStrategy` 
 
 Because the `CacheImpl` accepts the generic `PersistenceStrategy` interface, it doesn't know if it's using the synchronous `WriteThrough` or the asynchronous `WriteBack`. Changing how the Cache talks to H2 is just a one-word change on initialization via the `CacheFactory`!
 
-#### The Flow of `put()`
-1. Lock universe (`writeLock`).
-2. Construct `CacheEntry` encapsulating TTL.
-3. Does it already exist? Just overwrite the value and tell the Eviction Policy.
-4. *It is new!* Is Storage Full? 
-   - Ask Eviction Policy: `evictKey()`. 
-   - Delete that victim from memory and from H2.
-5. Push new item to `Storage`.
-6. Push new item to `PersistenceStrategy`.
-7. Inform `EvictionPolicy.keyAccessed(key)`.
-8. Unlock.
-
-#### Dynamic Policy Swapping
+#### Integration with `PersistenceStrategy`
 One core requirement was switching strategies mid-flight.
 ```java
 public void changeEvictionPolicy(EvictionPolicy<K> newPolicy) {
