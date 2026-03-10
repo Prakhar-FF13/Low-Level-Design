@@ -222,6 +222,28 @@ public class InMemoryStorage<K, V> implements Storage<K, V> {
 ```
 Because the Eviction Policy tracks ordering independently, the `InMemoryStorage` does not care about what order things are in. We use `ConcurrentHashMap` specifically so our TTL Reaper Thread doesn't throw a `ConcurrentModificationException` if it iterates over keys while a user is actively inserting them.
 
+#### Storage vs. Eviction: The Perfect Decoupling
+One of the most critical elements of this system is the **Separation of Concerns** between Storage and Eviction.
+
+**Storage is the "Data Holder"**
+- It holds the actual heavy payload (the `CacheEntry` containing your values and TTL).
+- It does **not** know what order things were inserted in. It doesn't know what item was accessed most recently or least frequently. HashMaps are intentionally unordered to maintain `O(1)` speed.
+
+**Eviction Policy is the "Traffic Director"**
+- It does **not** store the heavy cache data. It **only** stores the Keys.
+- It builds lightweight data structures (like Doubly Linked Lists or Queues) made *exclusively* of the Keys. Its only job is to track the chronological or mathematical order of those Keys based on the policy rules.
+- It has absolutely zero concept of what the "Value" is. It never touches the `CacheEntry` or the user's data.
+
+**How they relate during an Eviction (`put()` flow):**
+1. **CacheImpl** sees `Storage.isFull()` is true.
+2. **CacheImpl** asks the **Eviction Policy**: "Hey, I need to make room. Give me a Victim Key."
+3. The **Eviction Policy** looks at its Linked List of Keys, chops off the tail, and hands back the Key.
+4. **CacheImpl** takes that Key and goes to the **Storage**.
+5. **CacheImpl** tells the **Storage**: "Delete the heavy data associated with this Key to free up space."
+
+**Why not just put the eviction logic *inside* the Storage?**
+If you cram the linked list logic directly inside the `InMemoryStorage`, then the Storage becomes permanently locked to that one algorithm. By pulling all the Key-tracking logic out into an `EvictionPolicy` interface, you gain the ability to hot-swap policies. You can call `cache.changeEvictionPolicy(new LFUEvictionPolicy())` at runtime. The Cache will preserve all the heavy 10GB data sitting safely inside the unordered `Storage`, and gently hand the new LFU Policy all the Keys so it can start building a brand new queue tracking system from scratch!
+
 ### Persistence & H2 Database
 
 To seamlessly allow migrating off H2 to MySQL/Postgres, we route raw Database I/O through `CacheRepository` which extends `JpaRepository<CacheEntity, String>`.
