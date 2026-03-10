@@ -303,6 +303,14 @@ private final ReadWriteLock lock = new ReentrantReadWriteLock();
 ```
 We chose `ReentrantReadWriteLock` over `synchronized`. Why? Memory caching is heavily read-dominant. 100 threads can instantly hold a `ReadLock` concurrently. On the contrary, when a user issues `get()` or `put()`, it moves elements inside our Policy Linked Lists. This requires mutability, so we secure a `WriteLock()`. When a `WriteLock` triggers, it halts the universe until the mutation completes, ensuring zero corrupted Linked List pointers. 
 
+#### Integration with `PersistenceStrategy`
+The `CacheImpl` acts as a middleman and uses the injected `PersistenceStrategy` in three critical places to ensure the database perpetually matches the Volatile Memory:
+1. **During a `put()` operation (Saving to DB)**: When new data is added, `CacheImpl` simultaneously writes it to volatile `Storage` and the `PersistenceStrategy`.
+2. **During Eviction (Deleting from DB)**: When the cache hits its capacity limits, the victim key determined by the Eviction Policy is wiped from both memory and the database.
+3. **During TTL Garbage Collection (Reaper cleanup)**: When the background Reaper thread finds a lazily expired item, it wipes it from both locations.
+
+Because the `CacheImpl` accepts the generic `PersistenceStrategy` interface, it doesn't know if it's using the synchronous `WriteThrough` or the asynchronous `WriteBack`. Changing how the Cache talks to H2 is just a one-word change on initialization via the `CacheFactory`!
+
 #### The Flow of `put()`
 1. Lock universe (`writeLock`).
 2. Construct `CacheEntry` encapsulating TTL.
