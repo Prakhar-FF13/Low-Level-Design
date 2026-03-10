@@ -12,3 +12,4 @@ Each problem has the following:
 1. [Rule Engine](src/main/java/com/springmicroservice/lowleveldesignproblems/ruleengine)
 2. [ATM](src/main/java/com/springmicroservice/lowleveldesignproblems/atmmachine)
 3. [Route Handler / Middleware](src/main/java/com/springmicroservice/lowleveldesignproblems/routehandler)
+4. [Cache System](src/main/java/com/springmicroservice/lowleveldesignproblems/cachesystem)
