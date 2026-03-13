@@ -13,3 +13,4 @@ Each problem has the following:
 2. [ATM](src/main/java/com/springmicroservice/lowleveldesignproblems/atmmachine)
 3. [Route Handler / Middleware](src/main/java/com/springmicroservice/lowleveldesignproblems/routehandler)
 4. [Cache System](src/main/java/com/springmicroservice/lowleveldesignproblems/cachesystem)
+5. [Cricbuzz](src/main/java/com/springmicroservice/lowleveldesignproblems/cricbuzz)
