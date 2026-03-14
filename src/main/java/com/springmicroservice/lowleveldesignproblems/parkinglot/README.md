@@ -39,38 +39,180 @@ To make this highly decoupled and scalable, the codebase is structured into cohe
 
 ```mermaid
 classDiagram
-    class ParkingLotManager {
-        <<Facade>>
-        +getFreeSlot(Vehicle) Ticket
-        +getReceipt(Vehicle) Receipt
+    %% --- Enums & Value Objects ---
+    class ParkingFeature {
+        <<enumeration>>
+        CAR_SIZE
+        BIKE_SIZE
+        EV_CHARGER
+        HYDROGEN_PUMP
+        SOLAR_PANEL
+    }
+
+    class VehicleType {
+        <<enumeration>>
+        CAR
+        BIKE
+        ELECTRIC_CAR
+        +getRequiredFeatures() Set~ParkingFeature~
+    }
+
+    class SlotType {
+        <<enumeration>>
+        CAR
+        BIKE
+    }
+
+    %% --- Core Domain Models ---
+    class ParkingLot {
+        -Long id
+        -String name
+        -String address
+        -List~ParkingFloor~ parkingFloors
+    }
+
+    class ParkingFloor {
+        -Long parkingFloorId
+        -List~Slot~ slots
+    }
+
+    class Slot {
+        <<interface>>
+        +getId() Long
+        +getWidth() int
+        +getHeight() int
+        +getType() SlotType
+        +isFree() boolean
+        +assignVehicle(Vehicle)
+        +freeSlot()
+        +getProvidedFeatures() Set~ParkingFeature~
+        +canFit(Vehicle) boolean
+    }
+
+    class CarSlot {
+        -Long id
+        -Vehicle parkedVehicle
+        -Set~ParkingFeature~ providedFeatures
     }
     
+    class Vehicle {
+        -Long id
+        -String vehicleNum
+        -VehicleType vehicleType
+    }
+
+    class Ticket {
+        -String carNumber
+        -Slot slot
+        -long inTime
+        -long outTime
+    }
+
+    class Receipt {
+        -String receiptNumber
+        -Ticket ticket
+        -double fee
+    }
+    
+    class DisplayBoard {
+        -Map~SlotType, Integer~ availableSlotsCount
+    }
+
+    %% --- Relationships: Domain Models ---
+    ParkingLot "1" *-- "many" ParkingFloor
+    ParkingFloor "1" *-- "many" Slot
+    Slot <|.. CarSlot
+    CarSlot o-- Vehicle : parkedVehicle
+    Vehicle --> VehicleType
+    VehicleType --> ParkingFeature : requires
+    CarSlot --> ParkingFeature : provides
+    Ticket --> Slot
+    Receipt --> Ticket
+    DisplayBoard --> SlotType
+
+    %% --- Strategies ---
+    class SlotDeterminingStrategy {
+        <<interface>>
+        +determineSlot(Vehicle, ParkingLot) Slot
+        +freeSlot(Slot)
+    }
+
+    class FirstFreeSlotStrategy {
+        +determineSlot(Vehicle, ParkingLot) Slot
+    }
+
+    class CompatibilityEngine {
+        <<utility>>
+        +canFit(Vehicle, Slot)$ boolean
+    }
+
+    class PaymentStrategy {
+        <<interface>>
+        +calculateFee(Ticket) double
+    }
+
+    class HourlyPaymentStrategy {
+        +calculateFee(Ticket) double
+    }
+
+    SlotDeterminingStrategy <|.. FirstFreeSlotStrategy
+    FirstFreeSlotStrategy ..> CompatibilityEngine : uses
+    PaymentStrategy <|.. HourlyPaymentStrategy
+
+    %% --- Services & Observer Pattern ---
+    class ParkingEventListener {
+        <<interface>>
+        +onVehicleParked(SlotType)
+        +onVehicleUnparked(SlotType)
+    }
+
+    class DisplayBoardUpdater {
+        -DisplayBoard displayBoard
+        +onVehicleParked(SlotType)
+        +onVehicleUnparked(SlotType)
+    }
+
+    class EventPublisher {
+        -List~ParkingEventListener~ listeners
+        +addListener(ParkingEventListener)
+        +publishVehicleParked(SlotType)
+        +publishVehicleUnparked(SlotType)
+    }
+
     class TicketService {
+        -Map~String, Ticket~ activeTickets
         +saveTicket(Ticket)
         +getTicket(String) Ticket
         +removeTicket(String)
     }
 
     class PaymentService {
+        -PaymentStrategy paymentStrategy
         +processPayment(Ticket) Receipt
     }
 
-    class EventPublisher {
-        +publishVehicleParked(SlotType)
-        +publishVehicleUnparked(SlotType)
+    ParkingEventListener <|.. DisplayBoardUpdater
+    EventPublisher o-- ParkingEventListener : notifies
+    DisplayBoardUpdater --> DisplayBoard : updates
+    PaymentService o-- PaymentStrategy : delegates to
+
+    %% --- Facade ---
+    class ParkingLotManager {
+        <<Facade>>
+        -ParkingLot parkingLot
+        -SlotDeterminingStrategy slotDeterminingStrategy
+        -TicketService ticketService
+        -PaymentService paymentService
+        -EventPublisher eventPublisher
+        +getFreeSlot(Vehicle) Ticket
+        +getReceipt(Vehicle) Receipt
     }
 
+    ParkingLotManager --> ParkingLot
+    ParkingLotManager --> SlotDeterminingStrategy
     ParkingLotManager --> TicketService
     ParkingLotManager --> PaymentService
     ParkingLotManager --> EventPublisher
-
-    class SlotDeterminingStrategy {
-        <<interface>>
-        +determineSlot(Vehicle, ParkingLot) Slot
-        +freeSlot(Slot)
-    }
-    
-    ParkingLotManager --> SlotDeterminingStrategy
 ```
 
 **Why this structure? (Applying SOLID Principles)**
