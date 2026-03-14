@@ -37,3 +37,9 @@ Building a system that violently blasts live cricket scores to 50 million phones
 *   **What it teaches:** How to build insanely decoupled systems where the backend has zero clue who it's sending data to—it just yells it into the void, and the right apps catch it.
 *   **Design Patterns:** **Observer Pattern** (Publisher/Subscriber) equipped with custom **Predicate Filtering** so users only get the exact updates they ask for.
 *   **SOLID Principles:** **Dependency Inversion Principle** (The producer only depends on a simple Consumer Interface, allowing infinite types of apps to connect!).
+
+### 6. [Parking Lot System 🚗](src/main/java/com/springmicroservice/lowleveldesignproblems/parkinglot)
+The classic LLD problem on steroids. Instead of generic `if (type == CAR)` matching, this builds a mathematical subset-matching engine using vehicle "capabilities", alongside real-time event publishing.
+*   **What it teaches:** Domain modeling, Capability-based configuration, and decoupling cross-cutting concerns (like payments and analytics).
+*   **Design Patterns:** **Strategy Pattern** (Best-Fit Slot Matching & Modular Payments), **Observer Pattern** (Live Display Boards), and **Facade Pattern**.
+*   **SOLID Principles:** High emphasis on **Single Responsibility** (splitting ticket management, payments, and events into micro-services) and the **Open/Closed Principle**.
