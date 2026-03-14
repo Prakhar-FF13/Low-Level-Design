@@ -352,7 +352,24 @@ This Parking Lot System satisfies exhaustive production-ready Low-Level Design s
 1. **Separation of Concerns**: Micro-services cleanly handle their own domain boundaries.
 2. **Scalability**: Sub-set matching gracefully allows infinite future vehicle-types without nested `if` statements.
 
-### Running & Testing the Application
+### Running the Interactive CLI
+We have built a fully interactive Command Line Interface to experience the system in real-time.
+
+```bash
+# Compile and run the CLI application
+./gradlew run --args="ParkingLotApplication" # If a run task is configured
+# Or simply compile and execute using Java:
+./gradlew compileJava
+java -cp build/classes/java/main com.springmicroservice.lowleveldesignproblems.parkinglot.ParkingLotApplication
+```
+
+**Available Commands inside the CLI:**
+*   `PARK CAR MH-04-1234`
+*   `PARK ELECTRIC_CAR EV-9876`
+*   `UNPARK MH-04-1234`
+*   `EXIT`
+
+### Running the Test Suite
 We built highly detailed JUnit 5 Tests isolating the Sub-Set Math and "Best Fit" ordering behaviors.
 
 ```bash
