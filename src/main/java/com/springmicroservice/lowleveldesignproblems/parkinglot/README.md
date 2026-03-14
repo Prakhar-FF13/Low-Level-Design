@@ -215,6 +215,12 @@ classDiagram
     ParkingLotManager --> EventPublisher
 ```
 
+#### UML Relationship Legend:
+*   `*--` **Composition (Strong)**: The child cannot exist independently of the parent. (e.g., A `ParkingLot` *owns* its `ParkingFloor`s).
+*   `o--` **Aggregation (Weak)**: The components can exist independently. (e.g., A `CarSlot` *holds* a `Vehicle`, but the Vehicle exists without the slot).
+*   `-->` **Directed Association**: One class holds a reference to another. (e.g., `Vehicle` knows its `VehicleType`).
+*   `<|..` **Realization**: A class implements an interface. (e.g., `CarSlot` implements `Slot`).
+*   `..>` **Dependency**: A class uses another temporarily without holding a permanent reference. (e.g., `FirstFreeSlotStrategy` relies on `CompatibilityEngine`).
 **Why this structure? (Applying SOLID Principles)**
 Initially, a single `ParkingLotManager` "God Class" handled *everything*: finding slots, storing tickets in a map, calculating payments, and freeing slots. This drastically violated the **Single Responsibility Principle (SRP)**.
 
