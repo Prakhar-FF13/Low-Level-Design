@@ -43,3 +43,9 @@ The classic LLD problem on steroids. Instead of generic `if (type == CAR)` match
 *   **What it teaches:** Domain modeling, Capability-based configuration, and decoupling cross-cutting concerns (like payments and analytics).
 *   **Design Patterns:** **Strategy Pattern** (Best-Fit Slot Matching & Modular Payments), **Observer Pattern** (Live Display Boards), and **Facade Pattern**.
 *   **SOLID Principles:** High emphasis on **Single Responsibility** (splitting ticket management, payments, and events into micro-services) and the **Open/Closed Principle**.
+
+### 7. [BookMyShow 🎬](src/main/java/com/springmicroservice/lowleveldesignproblems/bookmyshow)
+A movie ticket booking system with seat selection, concurrent booking handling, and REST API. Built with DDD and Hexagonal Architecture.
+*   **What it teaches:** Domain-Driven Design, Ports & Adapters, pessimistic locking for concurrency, and layered testing (unit → controller → integration).
+*   **Design Patterns:** **Hexagonal Architecture** (Ports & Adapters), **Repository Pattern**, **Domain Services**.
+*   **SOLID Principles:** **Dependency Inversion** (domain depends on ports, not adapters), **Single Responsibility** (domain vs infrastructure vs API).

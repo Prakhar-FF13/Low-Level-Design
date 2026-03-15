@@ -17,7 +17,9 @@ public class ScreenEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "rows_count")
     private int rows;
+    @Column(name = "columns_count")
     private int columns;
 
     @ManyToOne(fetch = FetchType.LAZY)

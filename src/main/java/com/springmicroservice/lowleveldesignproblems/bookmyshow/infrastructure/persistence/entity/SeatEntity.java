@@ -15,7 +15,9 @@ public class SeatEntity {
     private Long id;
 
     private String seatNumber;
+    @Column(name = "row_num")
     private int row;
+    @Column(name = "col_num")
     private int column;
 
     @ManyToOne(fetch = FetchType.LAZY)

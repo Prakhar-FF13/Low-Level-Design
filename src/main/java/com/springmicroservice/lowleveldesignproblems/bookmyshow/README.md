@@ -18,6 +18,7 @@ A complete tutorial for building a movie ticket booking system using **Domain-Dr
 10. [UML Diagrams](#10-uml-diagrams)
 11. [API Reference](#11-api-reference)
 12. [How to Run](#12-how-to-run)
+13. [Testing](#13-testing)
 
 ---
 
@@ -868,6 +869,129 @@ Content-Type: application/json
 
 ---
 
+## 13. Testing
+
+The project includes **unit tests**, **controller tests**, and **integration tests** covering the full booking flow.
+
+### 13.1 Test Pyramid Overview
+
+| Layer | Test Class | Type | Count | Purpose |
+|-------|------------|------|-------|---------|
+| **Domain** | `BookingDomainServiceTest` | Unit | 6 | Pure domain logic — validation, ticket creation |
+| **Application** | `BookingServiceTest` | Unit (mocked ports) | 5 | Use-case orchestration with mocked repositories |
+| **API** | `BookingControllerIntegrationTest` | Controller | 6 | REST endpoints with mocked `BookingService` |
+| **End-to-End** | `BookingIntegrationTest` | Integration | 4 | Full stack with real DB, seeded data |
+
+### 13.2 Unit Tests
+
+#### BookingDomainServiceTest
+Tests the domain service in isolation — no Spring, no database.
+
+| Test | Verifies |
+|------|----------|
+| `createTicket_success_createsTicketAndUpdatesSeatStatus` | Ticket created, seats marked BOOKED |
+| `createTicket_showNull_throwsBookingException` | Rejects null show |
+| `createTicket_seatsNull_throwsBookingException` | Rejects null seats |
+| `createTicket_seatsEmpty_throwsBookingException` | Rejects empty seat list |
+| `createTicket_seatNotForShow_throwsBookingException` | Seat must belong to show |
+| `createTicket_seatNotAvailable_throwsBookingException` | Seat must be AVAILABLE |
+
+#### BookingServiceTest
+Tests the application service with mocked ports (`@Mock`).
+
+| Test | Verifies |
+|------|----------|
+| `bookSeats_success_returnsTicket` | Full flow: load show → lock seats → create ticket → save |
+| `bookSeats_showNotFound_throwsIllegalArgumentException` | 400 when show missing |
+| `bookSeats_noSeatsSelected_throwsIllegalArgumentException` | 400 when seatIds null/empty |
+| `bookSeats_seatsNotFound_throwsIllegalArgumentException` | 400 when one or more seat IDs invalid |
+| `getAvailableSeats_returnsListFromRepository` | Delegates to repository correctly |
+
+### 13.3 Controller Tests
+
+#### BookingControllerIntegrationTest
+Uses `MockMvcBuilders.standaloneSetup()` with mocked `BookingService` — no Spring context, no HTTP server.
+
+| Test | Verifies |
+|------|----------|
+| `getAvailableSeats_returns200AndList` | GET returns 200 + JSON array |
+| `bookSeats_validRequest_returns201` | POST returns 201 + ticket JSON |
+| `bookSeats_missingShowId_returns400` | Validation fails when `showId` missing |
+| `bookSeats_emptySeatIds_returns400` | Validation fails when `seatIds` empty |
+| `bookSeats_showNotFound_returns400` | Service exception → 400 |
+| `bookSeats_bookingException_returns400` | `BookingException` → 400 |
+
+### 13.4 Integration Tests
+
+#### BookingIntegrationTest
+Uses `@SpringBootTest` + `@AutoConfigureMockMvc` + `@ActiveProfiles("test")` — full application context, real H2 database.
+
+| Test | Verifies |
+|------|----------|
+| `getAvailableSeats_returnsSeededData` | GET returns 12 available seats from seeded data |
+| `bookSeats_fullFlow_createsTicket` | POST creates ticket, seats persisted as BOOKED |
+| `bookSeats_showNotFound_returns400` | Non-existent show → 400 |
+| `bookSeats_invalidSeatIds_returns400` | Invalid seat IDs → 400 |
+
+### 13.5 Test Data Setup
+
+- **Production:** `DataSeeder` (`@Profile("!test")`) seeds data when the app runs normally.
+- **Tests:** `TestDataSeeder` (`@Profile("test")`) seeds the same structure (Movie, Theater, Screen, Seats, Show, ShowSeats) when `@ActiveProfiles("test")` is active.
+- **Config:** `application-test.properties` sets `spring.jpa.hibernate.ddl-auto=create` and a dedicated H2 URL for tests.
+
+### 13.6 Test Dependencies and Annotations
+
+#### Gradle Dependencies (`build.gradle`)
+
+| Dependency | Why Added |
+|------------|-----------|
+| `spring-boot-starter-test` | Core testing support: JUnit 5, AssertJ, Mockito, Hamcrest. Provides `@SpringBootTest`, `MockMvc`, and test utilities. |
+| `spring-boot-starter-data-jpa-test` | JPA-specific test support: `@DataJpaTest`, test database auto-configuration. Ensures JPA repositories work correctly in tests. |
+| `spring-boot-starter-webmvc-test` | Web layer test support: `@WebMvcTest`, `@AutoConfigureMockMvc`, JSON assertions. Needed for controller and integration tests. |
+| `junit-platform-launcher` | JUnit 5 test engine. Required for Gradle to discover and run JUnit 5 tests via `useJUnitPlatform()`. |
+
+The `useJUnitPlatform()` in `build.gradle` tells Gradle to use JUnit 5 (Jupiter) instead of JUnit 4 for the `test` task.
+
+#### JUnit 5 Annotations
+
+| Annotation | Where Used | Purpose |
+|------------|------------|---------|
+| `@Test` | All test methods | Marks a method as a test. JUnit runs it and reports pass/fail. |
+| `@BeforeEach` | `setUp()` in BookingDomainServiceTest, BookingServiceTest, BookingControllerIntegrationTest | Runs before each test. Used to reset state, create mocks, or build test data so tests stay independent. |
+
+#### Mockito Annotations (Unit & Controller Tests)
+
+| Annotation | Where Used | Purpose |
+|------------|------------|---------|
+| `@ExtendWith(MockitoExtension.class)` | BookingServiceTest, BookingControllerIntegrationTest | Enables Mockito for JUnit 5. Initializes `@Mock` fields and runs Mockito's validation (e.g., unused stubs). |
+| `@Mock` | BookingServiceTest (ShowRepositoryPort, ShowSeatRepositoryPort, TicketRepositoryPort), BookingControllerIntegrationTest (BookingService) | Creates a mock implementation of the interface. Lets you stub `when(...).thenReturn(...)` and verify `verify(mock).method(...)` without real implementations. |
+
+**Why Mockito?** Unit and controller tests should not hit the database or external services. Mocks let us control dependencies and assert that the right methods were called with the right arguments.
+
+#### Spring Test Annotations (Integration Tests)
+
+| Annotation | Where Used | Purpose |
+|------------|------------|---------|
+| `@SpringBootTest` | BookingIntegrationTest | Starts the full Spring application context (all beans, config, DB). Use when testing the entire stack end-to-end. |
+| `@AutoConfigureMockMvc` | BookingIntegrationTest | Configures `MockMvc` and injects it via `@Autowired`. Lets you send HTTP requests to controllers without starting a real server. |
+| `@ActiveProfiles("test")` | BookingIntegrationTest | Activates the `test` profile. Loads `application-test.properties`, enables `TestDataSeeder`, and disables production `DataSeeder`. |
+
+**Why `@SpringBootTest`?** Integration tests need the real `BookingService`, adapters, repositories, and database. `@SpringBootTest` wires everything together so we can verify the full flow.
+
+**Why `standaloneSetup` for controller tests?** `BookingControllerIntegrationTest` uses `MockMvcBuilders.standaloneSetup(new BookingController(bookingService))` instead of `@WebMvcTest`. This creates a minimal context with only the controller and mocked service — no full app context. Faster and focused on the HTTP layer.
+
+### 13.7 Running Tests
+
+```bash
+# Run all BookMyShow tests
+./gradlew test --tests "com.springmicroservice.lowleveldesignproblems.bookmyshow.*"
+
+# Run all project tests
+./gradlew test
+```
+
+---
+
 ## Summary
 
 | Concept | Implementation |
@@ -879,5 +1003,6 @@ Content-Type: application/json
 | **REST API** | `@RestController` with `@GetMapping` / `@PostMapping` |
 | **Validation** | `@Valid` + `@NotNull` / `@NotEmpty` on DTOs |
 | **Error handling** | `@ExceptionHandler` for domain exceptions |
+| **Testing** | Unit (domain + application), controller (MockMvc), integration (`@SpringBootTest`) |
 
 This design keeps the domain testable, the infrastructure swappable, and the API clear for clients.
