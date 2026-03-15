@@ -1,4 +1,4 @@
-package com.springmicroservice.lowleveldesignproblems.bookmyshow.repository;
+package com.springmicroservice.lowleveldesignproblems.bookmyshow.infrastructure.persistence.repository;
 
 import com.springmicroservice.lowleveldesignproblems.bookmyshow.domain.enums.SeatStatus;
 import com.springmicroservice.lowleveldesignproblems.bookmyshow.infrastructure.persistence.entity.ShowSeatEntity;
