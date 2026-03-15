@@ -11,6 +11,8 @@ public interface ShowSeatRepositoryPort {
 
     List<ShowSeats> findByIdIn(List<Long> ids);
 
+    List<ShowSeats> findByIdInForUpdate(List<Long> ids);
+
     ShowSeats save(ShowSeats showSeats);
 
     List<ShowSeats> saveAll(List<ShowSeats> showSeats);

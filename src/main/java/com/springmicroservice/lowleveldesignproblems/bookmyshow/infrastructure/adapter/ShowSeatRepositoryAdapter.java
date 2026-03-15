@@ -38,6 +38,16 @@ public class ShowSeatRepositoryAdapter implements ShowSeatRepositoryPort {
     }
 
     @Override
+    public List<ShowSeats> findByIdInForUpdate(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return showSeatRepository.findByIdInForUpdate(ids).stream()
+                .map(EntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public ShowSeats save(ShowSeats showSeats) {
         ShowSeatEntity entity = EntityMapper.toEntity(showSeats);
         ShowSeatEntity saved = showSeatRepository.save(entity);

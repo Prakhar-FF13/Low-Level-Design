@@ -5,7 +5,6 @@ import com.springmicroservice.lowleveldesignproblems.bookmyshow.api.dto.BookingR
 import com.springmicroservice.lowleveldesignproblems.bookmyshow.api.dto.AvailableSeatResponse;
 import com.springmicroservice.lowleveldesignproblems.bookmyshow.application.booking.BookingService;
 import com.springmicroservice.lowleveldesignproblems.bookmyshow.domain.exceptions.BookingException;
-import com.springmicroservice.lowleveldesignproblems.bookmyshow.domain.exceptions.ConcurrentBookingException;
 import com.springmicroservice.lowleveldesignproblems.bookmyshow.domain.models.ShowSeats;
 import com.springmicroservice.lowleveldesignproblems.bookmyshow.domain.models.Ticket;
 import jakarta.validation.Valid;
@@ -39,11 +38,6 @@ public class BookingController {
         Ticket ticket = bookingService.bookSeats(request.showId(), request.seatIds());
         var response = toResponse(ticket);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @ExceptionHandler(ConcurrentBookingException.class)
-    public ResponseEntity<String> handleConcurrentBookingException(ConcurrentBookingException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(BookingException.class)

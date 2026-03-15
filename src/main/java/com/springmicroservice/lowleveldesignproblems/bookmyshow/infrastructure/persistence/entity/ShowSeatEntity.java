@@ -29,7 +29,4 @@ public class ShowSeatEntity {
 
     @Enumerated(EnumType.STRING)
     private SeatStatus status;
-
-    @Version
-    private Long version;
 }
