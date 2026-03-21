@@ -42,3 +42,20 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// Helper to create runnable tasks for packages with main classes
+def lldApps = [
+	'tictactoe'   : 'com.springmicroservice.lowleveldesignproblems.tictactoe.Main',
+	'parkinglot'  : 'com.springmicroservice.lowleveldesignproblems.parkinglot.ParkingLotApplication',
+	'ecommerce'   : 'com.springmicroservice.lowleveldesignproblems.ecommerce.Main'
+]
+
+lldApps.each { name, mainClassName ->
+	tasks.register("run${name.capitalize()}", JavaExec) {
+		group = 'lld-applications'
+		description = "Runs the ${name} application"
+		classpath = sourceSets.main.runtimeClasspath
+		mainClass = mainClassName
+		standardInput = System.in
+	}
+}

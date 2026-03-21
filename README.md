@@ -4,6 +4,35 @@ Welcome to my LLD repo! If you're tired of boring, textbook explanations of desi
 
 I built this repository to practice, revise, and completely master Object-Oriented Design (OOD). Each folder here is a deep dive into a classic system design interview problem. No fluffy theory just hard-hitting Java code, strict design patterns, and solid architecture!
 
+## ▶️ Running the Applications
+
+Several packages include a runnable main class. Use these Gradle tasks:
+
+| Application | Command |
+|-------------|---------|
+| **Tic Tac Toe** | `./gradlew runTictactoe` |
+| **Parking Lot** | `./gradlew runParkinglot` |
+| **E-Commerce** | `./gradlew runEcommerce` |
+
+### Gradle Task Parameters Explained
+
+Each run task is a `JavaExec` task with these parameters:
+
+| Parameter | Purpose |
+|-----------|---------|
+| **`group`** | Categorizes the task in `./gradlew tasks`. All LLD apps are grouped under `lld-applications` for easy discovery. |
+| **`description`** | Human-readable description shown when listing tasks (e.g., `./gradlew tasks --group=lld-applications`). |
+| **`classpath`** | Set to `sourceSets.main.runtimeClasspath` — includes your compiled classes plus all dependencies (Spring, H2, Lombok, etc.) so the JVM can load everything at runtime. |
+| **`mainClass`** | The fully qualified class name containing `public static void main(String[] args)` — the entry point Gradle invokes. |
+| **`standardInput`** | Set to `System.in` — connects the terminal to the process's stdin so interactive CLI apps (Scanner, BufferedReader) receive your keyboard input. Without this, apps that read from stdin would get an empty stream. |
+
+To list all available run tasks:
+```bash
+./gradlew tasks --group=lld-applications
+```
+
+---
+
 Here is what we are building and learning:
 
 ## 🎮 The Problems
@@ -55,3 +84,9 @@ Product search with filters, shopping cart, order placement, and cancellation. F
 *   **What it teaches:** Specification (Criteria) pattern for composable filters, Strategy pattern for price comparisons, Repository pattern for storage, and service-layer orchestration.
 *   **Design Patterns:** **Specification Pattern** (Criteria, AndFilterCriteria, OrFilterCriteria), **Strategy Pattern** (price comparison operators), **Repository Pattern** (in-memory implementations), **Factory Pattern** (PriceComparisonStrategyFactory).
 *   **SOLID Principles:** **Open/Closed** (add new filter criteria without modifying existing code), **Dependency Inversion** (services depend on repository interfaces).
+
+### 9. [Tic Tac Toe ⭕](src/main/java/com/springmicroservice/lowleveldesignproblems/tictactoe)
+Classic N x N Tic Tac Toe with extensible winning rules, undo support, and decoupled I/O for testing and future GUI.
+*   **What it teaches:** State machine modeling for game flow, pluggable winning strategies, template method for game loop, and factory-based object creation.
+*   **Design Patterns:** **State Pattern** (InProgress, Win, Draw), **Strategy Pattern** (Row, Column, Diagonal winning strategies), **Factory Pattern** (WinningStrategyFactory, GameFactory, PlayerFactory), **Template Method** (Game loop with I/O hooks).
+*   **SOLID Principles:** **Single Responsibility** (states, strategies, I/O separated), **Open/Closed** (add strategies without touching core), **Dependency Inversion** (I/O abstractions, injected dependencies).
