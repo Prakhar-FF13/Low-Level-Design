@@ -1,5 +1,7 @@
 # E-Commerce Low-Level Design (LLD)
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 This project demonstrates the Low-Level Design (LLD) for an **E-Commerce System** with product search, cart, and order management. It uses the Specification and Strategy patterns for filtering, plus a clean Repository pattern for in-memory persistence.
 
 ## Design Requirements

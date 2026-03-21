@@ -1,5 +1,7 @@
 # Rule Engine Low-Level Design (LLD)
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 This project demonstrates the Low-Level Design (LLD) for a **Business Expense Rule Engine**. It is scoped to focus on extensibility, decoupled architecture, and applying SOLID principles to evaluate corporate expenses against dynamic policies.
 
 ## Design Requirements

@@ -1,5 +1,7 @@
 # ATM Machine Low-Level Design (LLD)
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 This project demonstrates the Low-Level Design (LLD) for an Automated Teller Machine (ATM) using the **State Design Pattern**. It is scoped to focus deeply on modeling the correct structural design for a standard 1-hour Object-Oriented Design interview block.
 
 ## Design Requirements

@@ -1,5 +1,7 @@
 # BookMyShow — Low-Level Design (LLD) Tutorial
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 A complete tutorial for building a movie ticket booking system using **Domain-Driven Design (DDD)**, **Hexagonal Architecture**, and **Spring Boot**. This guide assumes minimal prior knowledge of LLD and Spring Boot.
 
 ---

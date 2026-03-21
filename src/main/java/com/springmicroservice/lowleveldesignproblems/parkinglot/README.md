@@ -1,5 +1,7 @@
 # Complete Guide to Building a Scalable Parking Lot System
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 Welcome to the definitive tutorial on the **Parking Lot Low-Level Design (LLD)**. If you've searched online for "Parking Lot LLD", you've probably seen a hundred solutions that look exactly the same: a massive `ParkingLot` class filled with `if (vehicleType == CAR)` statements and a hashmap tracking whether a slot is free.
 
 This guide will walk you through, in excruciating detail, how we built an **Enterprise-Grade** system that strictly follows **SOLID Principles**, throws away brittle `Enums` in favor of a dynamic Capability-Based matching system, and leverages powerful design patterns to handle real-world complexity (like a vehicle that is both Electric *and* Hydrogen-powered).

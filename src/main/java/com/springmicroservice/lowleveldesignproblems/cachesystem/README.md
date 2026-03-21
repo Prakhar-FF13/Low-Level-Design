@@ -1,5 +1,7 @@
 # Complete Guide to Building a Scalable Cache System
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 Welcome to the definitive tutorial on how this Cache System was designed and built. This guide will walk you through, in excruciating detail, every file, every line of code, and every single architectural decision behind building this highly scalable, concurrent, multithreaded cache system.
 
 ## Table of Contents

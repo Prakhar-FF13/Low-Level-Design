@@ -1,5 +1,7 @@
 # Route handler / Middleware design
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 ## Requirements:
 
 Design a route handler:

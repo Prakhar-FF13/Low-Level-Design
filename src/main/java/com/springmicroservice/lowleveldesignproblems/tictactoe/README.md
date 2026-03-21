@@ -1,5 +1,7 @@
 # LLD for Tic Tac Toe
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 ## Requirements
 
 1. Game board is of size N x N.

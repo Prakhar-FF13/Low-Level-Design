@@ -1,5 +1,7 @@
 # Cricbuzz Score Update - A Masterclass in the Observer Pattern
 
+> **Start here**: See [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) for a step-by-step design approach and interview tips.
+
 Welcome to the definitive guide on designing a highly scalable, real-time cricket score update system. This guide will dismantle the architecture, design patterns, and engineering decisions required to build a system akin to Cricbuzz.
 
 ## Table of Contents
