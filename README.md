@@ -49,3 +49,9 @@ A movie ticket booking system with seat selection, concurrent booking handling, 
 *   **What it teaches:** Domain-Driven Design, Ports & Adapters, pessimistic locking for concurrency, and layered testing (unit → controller → integration).
 *   **Design Patterns:** **Hexagonal Architecture** (Ports & Adapters), **Repository Pattern**, **Domain Services**.
 *   **SOLID Principles:** **Dependency Inversion** (domain depends on ports, not adapters), **Single Responsibility** (domain vs infrastructure vs API).
+
+### 8. [E-Commerce 🛒](src/main/java/com/springmicroservice/lowleveldesignproblems/ecommerce)
+Product search with filters, shopping cart, order placement, and cancellation. Full CLI demo with in-memory persistence.
+*   **What it teaches:** Specification (Criteria) pattern for composable filters, Strategy pattern for price comparisons, Repository pattern for storage, and service-layer orchestration.
+*   **Design Patterns:** **Specification Pattern** (Criteria, AndFilterCriteria, OrFilterCriteria), **Strategy Pattern** (price comparison operators), **Repository Pattern** (in-memory implementations), **Factory Pattern** (PriceComparisonStrategyFactory).
+*   **SOLID Principles:** **Open/Closed** (add new filter criteria without modifying existing code), **Dependency Inversion** (services depend on repository interfaces).
