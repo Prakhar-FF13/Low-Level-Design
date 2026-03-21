@@ -45,9 +45,11 @@ tasks.named('test') {
 
 // Helper to create runnable tasks for packages with main classes
 def lldApps = [
-	'tictactoe'   : 'com.springmicroservice.lowleveldesignproblems.tictactoe.Main',
-	'parkinglot'  : 'com.springmicroservice.lowleveldesignproblems.parkinglot.ParkingLotApplication',
-	'ecommerce'   : 'com.springmicroservice.lowleveldesignproblems.ecommerce.Main'
+	'tictactoe'     : 'com.springmicroservice.lowleveldesignproblems.tictactoe.Main',
+	'parkinglot'    : 'com.springmicroservice.lowleveldesignproblems.parkinglot.ParkingLotApplication',
+	'ecommerce'     : 'com.springmicroservice.lowleveldesignproblems.ecommerce.Main',
+	'onlineauction' : 'com.springmicroservice.lowleveldesignproblems.onlineauction.Main',
+	'moviecms'      : 'com.springmicroservice.lowleveldesignproblems.moviecms.Main'
 ]
 
 lldApps.each { name, mainClassName ->

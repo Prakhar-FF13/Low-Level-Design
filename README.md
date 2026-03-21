@@ -13,6 +13,8 @@ Several packages include a runnable main class. Use these Gradle tasks:
 | **Tic Tac Toe** | `./gradlew runTictactoe` |
 | **Parking Lot** | `./gradlew runParkinglot` |
 | **E-Commerce** | `./gradlew runEcommerce` |
+| **Online Auction** | `./gradlew runOnlineauction` |
+| **Movie CMS** | `./gradlew runMoviecms` |
 
 ### Gradle Task Parameters Explained
 
@@ -90,3 +92,15 @@ Classic N x N Tic Tac Toe with extensible winning rules, undo support, and decou
 *   **What it teaches:** State machine modeling for game flow, pluggable winning strategies, template method for game loop, and factory-based object creation.
 *   **Design Patterns:** **State Pattern** (InProgress, Win, Draw), **Strategy Pattern** (Row, Column, Diagonal winning strategies), **Factory Pattern** (WinningStrategyFactory, GameFactory, PlayerFactory), **Template Method** (Game loop with I/O hooks).
 *   **SOLID Principles:** **Single Responsibility** (states, strategies, I/O separated), **Open/Closed** (add strategies without touching core), **Dependency Inversion** (I/O abstractions, injected dependencies).
+
+### 10. [Online Auction 🔨](src/main/java/com/springmicroservice/lowleveldesignproblems/onlineauction)
+Sellers create auctions, buyers place bids, and winners are selected using a configurable strategy. Highest unique bid wins; preferred buyers break ties.
+*   **What it teaches:** Auction lifecycle modeling, winner selection algorithms, participation cost tracking, and seller P&L calculation.
+*   **Design Patterns:** **Strategy Pattern** (configurable winning strategy), **Repository Pattern** (in-memory implementations), **Service Layer** (AuctionService, BidsService, ProfitCalculationService).
+*   **SOLID Principles:** **Dependency Inversion** (WinningStrategy interface), **Single Responsibility** (separate services for auctions, bids, profit).
+
+### 11. [Movie CMS 🎞️](src/main/java/com/springmicroservice/lowleveldesignproblems/moviecms)
+A content management system for movies with user/movie registration, pluggable filter-based search, and multi-level caching (L1 per-user, L2 global).
+*   **What it teaches:** Multi-level cache hierarchy (L1 → L2 → primary), LRU eviction, cache key design for search, and composable filters with AND/OR logic.
+*   **Design Patterns:** **Strategy/Filter Pattern** (pluggable search criteria), **Composite Pattern** (CompositeFilter for multi-filter search), **Chain of Responsibility** (cache lookup: L1 → L2 → loader), **Repository Pattern**, **Facade** (MovieCMSOrchestrator).
+*   **SOLID Principles:** **Open/Closed** (new filters without touching search logic), **Single Responsibility** (services, cache, filters separated), **Dependency Inversion** (depend on Filter interface, repository interfaces).
