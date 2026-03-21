@@ -597,6 +597,16 @@ classDiagram
         LOCKED
         BOOKED
     }
+
+    class BookingDomainService {
+        +createTicket(Show, List~ShowSeats~) Ticket
+        +validateBooking(Show, List~ShowSeats~)
+    }
+
+    class BookingException {
+        <<exception>>
+        -String message
+    }
     
     Movie "1" --> "*" Show : has
     Theater "1" --> "*" Screen : has
@@ -607,6 +617,10 @@ classDiagram
     Ticket "1" --> "*" ShowSeats : has
     Show "1" --> "*" Ticket : has
     ShowSeats --> SeatStatus : uses
+    BookingDomainService ..> Show : validates
+    BookingDomainService ..> ShowSeats : validates
+    BookingDomainService ..> Ticket : creates
+    BookingDomainService ..> BookingException : throws
 ```
 
 ### 10.2 Class Diagram (Ports & Adapters)
@@ -657,8 +671,34 @@ classDiagram
         -ShowSeatRepositoryPort showSeatRepository
         -TicketRepositoryPort ticketRepository
         -TransactionTemplate transactionTemplate
+        -BookingDomainService bookingDomainService
         +bookSeats(Long, List) Ticket
         +getAvailableSeats(Long) List~ShowSeats~
+    }
+
+    class BookingController {
+        -BookingService bookingService
+        +getAvailableSeats(Long) List~AvailableSeatResponse~
+        +bookSeats(BookingRequest) ResponseEntity~BookingResponse~
+    }
+
+    class BookingRequest {
+        <<record>>
+        -Long showId
+        -List~Long~ seatIds
+    }
+
+    class BookingResponse {
+        <<record>>
+        -Long ticketId
+        -Long showId
+        -List~Long~ seatIds
+    }
+
+    class AvailableSeatResponse {
+        <<record>>
+        -Long seatId
+        -String seatNumber
     }
     
     ShowRepositoryPort <|.. ShowRepositoryAdapter : implements
@@ -668,9 +708,128 @@ classDiagram
     BookingService --> ShowRepositoryPort : uses
     BookingService --> ShowSeatRepositoryPort : uses
     BookingService --> TicketRepositoryPort : uses
+    BookingService --> BookingDomainService : uses
+    BookingController --> BookingService : uses
+    BookingController ..> BookingRequest : consumes
+    BookingController ..> BookingResponse : produces
+    BookingController ..> AvailableSeatResponse : produces
+
+    class MovieRepository {
+        <<interface>>
+        JpaRepository~MovieEntity, Long~
+    }
+
+    class TheaterRepository {
+        <<interface>>
+        JpaRepository~TheaterEntity, Long~
+    }
+
+    class ScreenRepository {
+        <<interface>>
+        JpaRepository~ScreenEntity, Long~
+    }
+
+    class SeatRepository {
+        <<interface>>
+        JpaRepository~SeatEntity, Long~
+    }
+
+    class ShowRepository {
+        <<interface>>
+        JpaRepository~ShowEntity, Long~
+    }
+
+    class ShowSeatRepository {
+        <<interface>>
+        JpaRepository~ShowSeatEntity, Long~
+    }
+
+    class TicketRepository {
+        <<interface>>
+        JpaRepository~TicketEntity, Long~
+    }
+
+    class EntityMapper {
+        <<utility>>
+        +toDomain(Entity) Domain
+        +toEntity(Domain) Entity
+    }
+
+    class DataSeeder {
+        <<CommandLineRunner>>
+        +run(String...) void
+    }
+
+    ShowRepositoryAdapter --> ShowRepository : uses
+    ShowSeatRepositoryAdapter --> ShowSeatRepository : uses
+    TicketRepositoryAdapter --> TicketRepository : uses
+    EntityMapper ..> ShowEntity : maps
+    EntityMapper ..> ShowSeatEntity : maps
+    EntityMapper ..> TicketEntity : maps
+    DataSeeder ..> EntityMapper : uses
+    DataSeeder ..> MovieRepository : uses
+    DataSeeder ..> TheaterRepository : uses
+    DataSeeder ..> ScreenRepository : uses
+    DataSeeder ..> SeatRepository : uses
+    DataSeeder ..> ShowRepository : uses
+    DataSeeder ..> ShowSeatRepository : uses
 ```
 
-### 10.3 Sequence Diagram — Get Available Seats
+### 10.3 Infrastructure Layer (JPA Entities)
+
+```mermaid
+classDiagram
+    class MovieEntity {
+        -Long id
+        -String title
+    }
+
+    class TheaterEntity {
+        -Long id
+        -String address
+    }
+
+    class ScreenEntity {
+        -Long id
+        -int rows
+        -int columns
+    }
+
+    class SeatEntity {
+        -Long id
+        -String seatNumber
+    }
+
+    class ShowEntity {
+        -Long showId
+        -MovieEntity movie
+        -ScreenEntity screen
+    }
+
+    class ShowSeatEntity {
+        -Long id
+        -SeatEntity seat
+        -ShowEntity show
+        -TicketEntity ticket
+        -SeatStatus status
+    }
+
+    class TicketEntity {
+        -Long id
+        -ShowEntity show
+    }
+
+    MovieEntity "1" --> "*" ShowEntity
+    TheaterEntity "1" --> "*" ScreenEntity
+    ScreenEntity "1" --> "*" SeatEntity
+    ScreenEntity "1" --> "*" ShowEntity
+    ShowEntity "1" --> "*" ShowSeatEntity
+    SeatEntity "1" --> "*" ShowSeatEntity
+    TicketEntity "1" --> "*" ShowSeatEntity
+    ShowEntity "1" --> "*" TicketEntity
+```
+
+### 10.4 Sequence Diagram — Get Available Seats
 
 ```mermaid
 sequenceDiagram
@@ -696,7 +855,7 @@ sequenceDiagram
     BookingController-->>-Client: 200 OK + JSON
 ```
 
-### 10.4 Sequence Diagram — Book Seats (Success)
+### 10.5 Sequence Diagram — Book Seats (Success)
 
 ```mermaid
 sequenceDiagram
@@ -736,7 +895,7 @@ sequenceDiagram
     BookingController-->>-Client: 201 Created + JSON
 ```
 
-### 10.5 Sequence Diagram — Book Seats (Concurrent Conflict with Pessimistic Locking)
+### 10.6 Sequence Diagram — Book Seats (Concurrent Conflict with Pessimistic Locking)
 
 ```mermaid
 sequenceDiagram

@@ -55,6 +55,23 @@ classDiagram
         -ReadWriteLock lock
     }
 
+    class CacheEntry~V~ {
+        -V value
+        -Long expiryTime
+        +isExpired() boolean
+    }
+
+    class CacheEntity {
+        -String id
+        -String value
+        -Long expiryTime
+    }
+
+    class CacheFactory~K,V~ {
+        <<factory>>
+        +createCache(...) Cache~K,V~
+    }
+
     class EvictionPolicy~K~ {
         <<interface>>
         +keyAccessed(K)
@@ -75,11 +92,54 @@ classDiagram
         +delete(String)
     }
 
+    class CacheFullException
+    class NotFoundException
+
     Cache <|.. CacheImpl
     CacheImpl --> EvictionPolicy : Delegates ordering
     CacheImpl --> Storage : Stores volatile data
     CacheImpl --> PersistenceStrategy : Saves durable data
+    CacheImpl o-- CacheEntry : stores values in
+    PersistenceStrategy ..> CacheEntity : persists
     
+    class LRUEvictionPolicy~K~ {
+        +keyAccessed(K)
+        +evictKey() K
+        +removeKey(K)
+    }
+
+    class LFUEvictionPolicy~K~ {
+        +keyAccessed(K)
+        +evictKey() K
+        +removeKey(K)
+    }
+
+    class FIFOEvictionPolicy~K~ {
+        +keyAccessed(K)
+        +evictKey() K
+        +removeKey(K)
+    }
+
+    class InMemoryStorage~K,V~ {
+        +add(K, V)
+        +get(K) V
+        +remove(K)
+    }
+
+    class WriteThroughStrategy {
+        -CacheRepository cacheRepository
+        +save(CacheEntity)
+        +delete(String)
+        +shutdown()
+    }
+
+    class WriteBackStrategy {
+        -CacheRepository cacheRepository
+        +save(CacheEntity)
+        +delete(String)
+        +shutdown()
+    }
+
     EvictionPolicy <|.. LRUEvictionPolicy
     EvictionPolicy <|.. LFUEvictionPolicy
     EvictionPolicy <|.. FIFOEvictionPolicy
@@ -88,6 +148,21 @@ classDiagram
     
     PersistenceStrategy <|.. WriteThroughStrategy
     PersistenceStrategy <|.. WriteBackStrategy
+
+    CacheFactory ..> CacheImpl : creates
+    CacheImpl ..> CacheFullException : may throw
+    CacheImpl ..> NotFoundException : may throw
+
+    class CacheRepository {
+        <<interface>>
+        JpaRepository~CacheEntity, String~
+        +save(CacheEntity)
+        +deleteById(String)
+        +existsById(String)
+    }
+
+    WriteThroughStrategy --> CacheRepository : uses
+    WriteBackStrategy --> CacheRepository : uses
 ```
 
 **Why this structure?**

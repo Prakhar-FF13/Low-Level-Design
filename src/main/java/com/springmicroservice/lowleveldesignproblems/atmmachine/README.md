@@ -37,6 +37,18 @@ classDiagram
         +requestCash(int amount)
     }
 
+    class IATMBackendApi {
+        <<interface>>
+        +validateCard(Card) boolean
+    }
+
+    class Card {
+        -String cardNumber
+        -String pin
+        -String bank
+        -String name
+    }
+
     class ATMState {
         <<interface>>
         +insertCard(ATM atm, Card card)
@@ -64,10 +76,18 @@ classDiagram
         +requestCash(ATM atm, int amount)
     }
 
+    class AlwaysTrueATMBackendAPI {
+        +validateCard(Card) boolean
+    }
+
     ATM --> ATMState : uses
+    ATM --> IATMBackendApi : uses
+    ATM ..> Card : processes
+    IATMBackendApi <|.. AlwaysTrueATMBackendAPI : implements
     ATMState <|.. IdleState : implements
     ATMState <|.. HasCardState : implements
     ATMState <|.. DispenseState : implements
+    HasCardState o-- Card : currentCard
 ```
 
 ### The Component Structure

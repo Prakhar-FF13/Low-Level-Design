@@ -76,6 +76,46 @@ classDiagram
         -Team teamB
     }
 
+    class Innings {
+        -int id
+        -int runs
+        -int wickets
+        -int oversRemaining
+        -boolean active
+    }
+
+    class Team {
+        -Long id
+        -String name
+        -List~Players~ players
+    }
+
+    class Players {
+        -Long id
+        -String name
+    }
+
+    class ScoreUpdateEvent {
+        -Long matchId
+        -int runsAdded
+        -int wicketsTaken
+        -int oversRemaining
+        -EventType eventType
+    }
+
+    class EventType {
+        <<enumeration>>
+        NORMAL_DELIVERY
+        BOUNDARY
+        WICKET
+        INNINGS_BREAK
+        MATCH_END
+    }
+
+    Match *-- Innings : innings1, innings2
+    Match *-- Team : teamA, teamB
+    Team *-- Players : players
+
     ScoreService <|.. ICCAPI : implements
     ScoreProducers <|.. ICCScoreProducer : implements
     ScoreConsumers <|.. ICCUIConsumer : implements
@@ -305,24 +345,42 @@ classDiagram
     class ScoreProducers {
         <<interface>>
         +subscribe(Subscription)
+        +unsubscribe(Subscription)
     }
 
     class ICCScoreProducer {
         -List~Subscription~ subscriptions
+        +subscribe(Subscription)
+        +unsubscribe(Subscription)
         +broadcastUpdate(ScoreUpdateEvent)
+    }
+
+    class EventFilter {
+        <<interface>>
+        +test(ScoreUpdateEvent) boolean
     }
 
     class Subscription {
         -ScoreConsumers consumer
         -EventFilter filterCondition
-        +isInterestedIn(ScoreUpdateEvent): boolean
+        +isInterestedIn(ScoreUpdateEvent) boolean
     }
 
     class ScoreUpdateEvent {
         -Long matchId
         -int runsAdded
         -int wicketsTaken
+        -int oversRemaining
         -EventType eventType
+    }
+
+    class EventType {
+        <<enumeration>>
+        NORMAL_DELIVERY
+        BOUNDARY
+        WICKET
+        INNINGS_BREAK
+        MATCH_END
     }
 
     class ScoreConsumers {
@@ -339,8 +397,10 @@ classDiagram
     ScoreConsumers <|.. ICCUIConsumer : implements
     ICCScoreProducer *-- Subscription : maintains list of
     Subscription o-- ScoreConsumers : wraps
+    Subscription o-- EventFilter : filterCondition
     Subscription ..> ScoreUpdateEvent : evaluates
     ICCScoreProducer ..> ScoreUpdateEvent : broadcasts
+    ScoreUpdateEvent --> EventType : uses
 ```
 
 #### The Real-Time Lifecycle (Sequence Diagram)

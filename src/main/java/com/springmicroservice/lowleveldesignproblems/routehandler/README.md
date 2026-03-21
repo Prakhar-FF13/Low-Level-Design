@@ -65,7 +65,7 @@ classDiagram
     }
 
     class Response {
-        
+        <<DTO>>
     }
 
     RouteHandler --> IHandler : mapped by URL
@@ -80,4 +80,15 @@ classDiagram
     AuthHandler --> IHandler : next
     LogBeforeHandler --> IHandler : next
     LogAfterHandler --> IHandler : next
+    DoNothingController --> IHandler : next
+
+    class MostCommonHandlersList {
+        <<factory>>
+        +getHandlers() IHandler
+    }
+
+    MostCommonHandlersList ..> AuthHandler : creates
+    MostCommonHandlersList ..> LogBeforeHandler : creates
+    MostCommonHandlersList ..> LogAfterHandler : creates
+    RouteHandler ..> MostCommonHandlersList : may use
 ```

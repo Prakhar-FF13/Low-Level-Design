@@ -41,18 +41,17 @@ classDiagram
     class ExpenseEvaluatorEngine {
         -List~SingleExpenseRule~ singleExpenseRules
         -List~MultiExpenseRule~ multiExpenseRules
-        +evaluateSingleExpense(Expense expense) List~Violations~
-        +evaluateTripExpenses(List~Expense~ expenses) List~Violations~
+        +validate(List~Expense~ expenses) List~Violations~
     }
 
     class SingleExpenseRule {
         <<interface>>
-        +evaluate(Expense expense) Optional~Violations~
+        +validate(Expense expense) Optional~Violations~
     }
 
     class MultiExpenseRule {
         <<interface>>
-        +evaluate(List~Expense~ expenses) Optional~Violations~
+        +validate(List~Expense~ expenses) Optional~Violations~
     }
 
     class Expense {
@@ -61,30 +60,72 @@ classDiagram
         -String description
     }
 
+    class ExpenseType {
+        <<enumeration>>
+        RESTAURANT
+        JEWELLERY
+        AIRFARE
+        ENTERTAINMENT
+    }
+
     class Violations {
         -String message
     }
 
     class AirfareExpenseRule {
-        +evaluate(Expense expense) Optional~Violations~
+        +validate(Expense expense) Optional~Violations~
+    }
+
+    class RestaurantExceedsRule {
+        +validate(Expense expense) Optional~Violations~
+    }
+
+    class EntertainmentExpenseRule {
+        +validate(Expense expense) Optional~Violations~
+    }
+
+    class TwoFiftyMaxRule {
+        +validate(Expense expense) Optional~Violations~
     }
 
     class MaxRestaurantsAmountRule {
-        +evaluate(Expense expense) Optional~Violations~
+        +validate(List~Expense~ expenses) Optional~Violations~
     }
     
     class MaxTripAmountRule {
-        +evaluate(List~Expense~ expenses) Optional~Violations~
+        +validate(List~Expense~ expenses) Optional~Violations~
     }
 
     ExpenseEvaluatorEngine --> SingleExpenseRule : evaluates
     ExpenseEvaluatorEngine --> MultiExpenseRule : evaluates
     ExpenseEvaluatorEngine ..> Expense : consumes
     ExpenseEvaluatorEngine ..> Violations : produces
+    Expense --> ExpenseType : uses
 
     SingleExpenseRule <|.. AirfareExpenseRule : implements
-    SingleExpenseRule <|.. MaxRestaurantsAmountRule : implements
+    SingleExpenseRule <|.. RestaurantExceedsRule : implements
+    SingleExpenseRule <|.. EntertainmentExpenseRule : implements
+    SingleExpenseRule <|.. TwoFiftyMaxRule : implements
+    MultiExpenseRule <|.. MaxRestaurantsAmountRule : implements
     MultiExpenseRule <|.. MaxTripAmountRule : implements
+
+    class RuleEngineService {
+        -ExpenseEvaluatorEngine engine
+        +execute(List~Expense~) List~Violations~
+    }
+
+    class RuleEngineHandler {
+        <<API>>
+        -RuleEngineService ruleEngineService
+    }
+
+    class ExpenseRepository {
+        <<interface>>
+        JpaRepository~Expense, Long~
+    }
+
+    RuleEngineService --> ExpenseEvaluatorEngine : uses
+    RuleEngineHandler --> RuleEngineService : uses
 ```
 
 ### The Component Structure
@@ -101,8 +142,11 @@ These interfaces define the contract that every specific rule must follow. This 
 #### 3. The Concrete Rules
 These classes implement the logic for one specific, isolated business requirement:
 *   `AirfareExpenseRule`: Checks if `type == AIRFARE`.
-*   `MaxRestaurantsAmountRule`: Checks if `type == RESTAURANT` and `amount > 75`.
-*   `MaxTripAmountRule`: Sums all expenses and checks if `total > 2000`.
+*   `RestaurantExceedsRule`: Checks if `type == RESTAURANT` and `amount > 75`.
+*   `EntertainmentExpenseRule`: Checks if `type == ENTERTAINMENT`.
+*   `TwoFiftyMaxRule`: Checks if any single expense exceeds $250.
+*   `MaxRestaurantsAmountRule`: Sums restaurant expenses per trip and checks if `total > 1000`.
+*   `MaxTripAmountRule`: Sums all expenses per trip and checks if `total > 2000`.
 
 ### Why this design excels for LLD Interviews:
 *   **SOLID Principles Masterclass**: 

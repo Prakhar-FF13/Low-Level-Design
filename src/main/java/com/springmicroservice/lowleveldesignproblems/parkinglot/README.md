@@ -213,6 +213,29 @@ classDiagram
     ParkingLotManager --> TicketService
     ParkingLotManager --> PaymentService
     ParkingLotManager --> EventPublisher
+
+    %% --- Exceptions ---
+    class ParkingLotFullException {
+        <<exception>>
+    }
+
+    class InvalidTicketException {
+        <<exception>>
+    }
+
+    FirstFreeSlotStrategy ..> ParkingLotFullException : throws
+    TicketService ..> InvalidTicketException : throws
+
+    %% --- Application Entry ---
+    class ParkingLotApplication {
+        <<entry>>
+        +main(String[]) void
+    }
+
+    ParkingLotApplication ..> ParkingLotManager : uses
+    ParkingLotApplication ..> ParkingLot : creates
+    ParkingLotApplication ..> FirstFreeSlotStrategy : uses
+    ParkingLotApplication ..> HourlyPaymentStrategy : uses
 ```
 
 #### UML Relationship Legend:
