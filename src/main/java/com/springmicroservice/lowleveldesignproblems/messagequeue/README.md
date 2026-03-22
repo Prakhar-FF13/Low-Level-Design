@@ -391,6 +391,99 @@ A subscriber's callback might fail (network, parsing, DB down). Without retry, w
 3. Retry until `maxRetries` attempts are exhausted.
 4. Rethrow the last exception; dispatcher logs and continues to the next subscriber.
 
+---
+
+### Retry Strategy Internals (Code Walkthrough)
+
+#### 1. Dispatcher invokes retry around subscriber callback
+
+The dispatcher wraps each subscriber delivery in `retryPolicy.execute()`. If the callback throws, the policy retries; if it still fails after all retries, the dispatcher catches, logs, and continues to the next subscriber.
+
+```java
+// MessageDispatcher.deliverToSubscriber()
+private void deliverToSubscriber(String queueName, Subscriber subscriber, List<Message> batch) {
+    try {
+        retryPolicy.execute(() -> subscriber.onMessage(batch));
+    } catch (Exception e) {
+        LOG.log(Level.SEVERE, "Subscriber %s failed after retries for queue %s: %s"
+                .formatted(subscriber.getId(), queueName, e.getMessage()), e);
+        // Optionally: re-queue batch to DLQ or dead-letter; for now we log and drop
+    }
+}
+```
+
+#### 2. RetryPolicy: loop, attempt, sleep, retry
+
+`RetryPolicy.execute()` runs the action in a loop. On exception it sleeps via the backoff strategy, then retries. After `maxRetries` attempts (so `maxRetries + 1` total runs), it rethrows.
+
+```java
+// RetryPolicy.execute()
+public void execute(ThrowingRunnable action) throws Exception {
+    Exception lastException = null;
+    for (int attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            action.run();
+            return;  // success — exit immediately
+        } catch (Exception e) {
+            lastException = e;
+            if (attempt < maxRetries) {
+                long delayMs = backoff.getDelayMs(attempt);
+                try {
+                    Thread.sleep(delayMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted during retry backoff", ie);
+                }
+            }
+        }
+    }
+    if (lastException != null) {
+        throw lastException;
+    }
+}
+```
+
+**Key points:**
+
+- `attempt` is 0-based: first failure → sleep `backoff.getDelayMs(0)`, then retry.
+- `attempt <= maxRetries` means we try up to `maxRetries + 1` times (e.g. maxRetries=3 → 4 attempts).
+- `ThrowingRunnable` is a custom `@FunctionalInterface` that allows `run() throws Exception` (unlike `Runnable`).
+
+#### 3. ExponentialBackoff: delay formula
+
+The strategy computes delay as `initialDelayMs * multiplier^attempt`, capped at `maxDelayMs`.
+
+```java
+// ExponentialBackoff.getDelayMs()
+@Override
+public long getDelayMs(int attempt) {
+    long delay = (long) (initialDelayMs * Math.pow(multiplier, attempt));
+    return Math.min(delay, maxDelayMs);
+}
+```
+
+Constructor defaults:
+
+```java
+// ExponentialBackoff default constructor
+public ExponentialBackoff() {
+    this(1000, 2.0, 30_000);  // 1s, 2s, 4s... capped at 30s
+}
+```
+
+#### 4. Factory for convenience
+
+```java
+// RetryPolicy.withExponentialBackoff()
+public static RetryPolicy withExponentialBackoff(int maxRetries) {
+    return new RetryPolicy(maxRetries, new ExponentialBackoff());
+}
+```
+
+Usage: `RetryPolicy.withExponentialBackoff(3)` → up to 4 attempts with 1s, 2s, 4s delays between retries.
+
+---
+
 ### ExponentialBackoff Formula
 
 ```
