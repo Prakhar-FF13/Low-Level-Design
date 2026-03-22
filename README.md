@@ -15,6 +15,7 @@ Several packages include a runnable main class. Use these Gradle tasks:
 | **E-Commerce** | `./gradlew runEcommerce` |
 | **Online Auction** | `./gradlew runOnlineauction` |
 | **Movie CMS** | `./gradlew runMoviecms` |
+| **Payment Gateway** | `./gradlew runPaymentgateway` |
 
 ### Gradle Task Parameters Explained
 
@@ -104,3 +105,9 @@ A content management system for movies with user/movie registration, pluggable f
 *   **What it teaches:** Multi-level cache hierarchy (L1 → L2 → primary), LRU eviction, cache key design for search, and composable filters with AND/OR logic.
 *   **Design Patterns:** **Strategy/Filter Pattern** (pluggable search criteria), **Composite Pattern** (CompositeFilter for multi-filter search), **Chain of Responsibility** (cache lookup: L1 → L2 → loader), **Repository Pattern**, **Facade** (MovieCMSOrchestrator).
 *   **SOLID Principles:** **Open/Closed** (new filters without touching search logic), **Single Responsibility** (services, cache, filters separated), **Dependency Inversion** (depend on Filter interface, repository interfaces).
+
+### 12. [Payment Gateway 💳](src/main/java/com/springmicroservice/lowleveldesignproblems/paymentgateway)
+A Paytm-style payment gateway that onboard clients, captures payments via UPI/Cards/NetBanking, and routes transactions to different banks with configurable strategies.
+*   **What it teaches:** Polymorphic payment details, pluggable routing (mode-based vs weighted distribution), facade orchestration, and traffic logging for audit.
+*   **Design Patterns:** **Strategy Pattern** (PaymentModeRoutingStrategy, WeightedRoutingStrategy), **Facade Pattern** (PaymentGatewayOrchestrator), **Polymorphism** (PaymentDetails: UPI, Card, NetBanking), **Repository Pattern**.
+*   **SOLID Principles:** **Open/Closed** (new payment method = new Details class; new routing = new Strategy), **Single Responsibility** (orchestrator, services, routing separated), **Dependency Inversion** (depend on PaymentRoutingStrategy interface).
