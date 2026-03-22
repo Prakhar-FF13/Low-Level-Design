@@ -50,7 +50,8 @@ def lldApps = [
 	'ecommerce'      : 'com.springmicroservice.lowleveldesignproblems.ecommerce.Main',
 	'onlineauction'  : 'com.springmicroservice.lowleveldesignproblems.onlineauction.Main',
 	'moviecms'       : 'com.springmicroservice.lowleveldesignproblems.moviecms.Main',
-	'paymentgateway' : 'com.springmicroservice.lowleveldesignproblems.paymentgateway.Main'
+	'paymentgateway' : 'com.springmicroservice.lowleveldesignproblems.paymentgateway.Main',
+	'messagequeue'   : 'com.springmicroservice.lowleveldesignproblems.messagequeue.Main'
 ]
 
 lldApps.each { name, mainClassName ->

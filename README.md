@@ -16,6 +16,7 @@ Several packages include a runnable main class. Use these Gradle tasks:
 | **Online Auction** | `./gradlew runOnlineauction` |
 | **Movie CMS** | `./gradlew runMoviecms` |
 | **Payment Gateway** | `./gradlew runPaymentgateway` |
+| **Message Queue** | `./gradlew runMessagequeue` |
 
 ### Gradle Task Parameters Explained
 
@@ -111,3 +112,9 @@ A Paytm-style payment gateway that onboard clients, captures payments via UPI/Ca
 *   **What it teaches:** Polymorphic payment details, pluggable routing (mode-based vs weighted distribution), facade orchestration, and traffic logging for audit.
 *   **Design Patterns:** **Strategy Pattern** (PaymentModeRoutingStrategy, WeightedRoutingStrategy), **Facade Pattern** (PaymentGatewayOrchestrator), **Polymorphism** (PaymentDetails: UPI, Card, NetBanking), **Repository Pattern**.
 *   **SOLID Principles:** **Open/Closed** (new payment method = new Details class; new routing = new Strategy), **Single Responsibility** (orchestrator, services, routing separated), **Dependency Inversion** (depend on PaymentRoutingStrategy interface).
+
+### 13. [In-Memory Message Queue 📬](src/main/java/com/springmicroservice/lowleveldesignproblems/messagequeue)
+A lightweight Kafka/Redis Pub-Sub style messaging queue where publishers push JSON-like messages and subscribers receive them asynchronously via callbacks, with batch consumption and retry with exponential backoff.
+*   **What it teaches:** Custom queue implementation (no java.util.Queue), pub-sub decoupling, fan-out delivery, retry with backoff, and thread safety.
+*   **Design Patterns:** **Observer / Pub-Sub** (Subscriber callbacks), **Strategy Pattern** (BackoffStrategy for retry), **Facade** (Publisher over QueueManager), **Executor/Scheduler** (configurable poll delay).
+*   **SOLID Principles:** **Single Responsibility** (Queue = storage; Dispatcher = delivery; RetryPolicy = retry), **Open/Closed** (new BackoffStrategy without changing RetryPolicy), **Dependency Inversion** (depend on MessageHandler, MessageQueue interfaces).
