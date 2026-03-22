@@ -17,6 +17,7 @@ Several packages include a runnable main class. Use these Gradle tasks:
 | **Movie CMS** | `./gradlew runMoviecms` |
 | **Payment Gateway** | `./gradlew runPaymentgateway` |
 | **Message Queue** | `./gradlew runMessagequeue` |
+| **Battleship** | `./gradlew runBattleship` |
 
 ### Gradle Task Parameters Explained
 
@@ -118,3 +119,9 @@ A lightweight Kafka/Redis Pub-Sub style messaging queue where publishers push JS
 *   **What it teaches:** Custom queue implementation (no java.util.Queue), pub-sub decoupling, fan-out delivery, retry with backoff, and thread safety.
 *   **Design Patterns:** **Observer / Pub-Sub** (Subscriber callbacks), **Strategy Pattern** (BackoffStrategy for retry), **Facade** (Publisher over QueueManager), **Executor/Scheduler** (configurable poll delay).
 *   **SOLID Principles:** **Single Responsibility** (Queue = storage; Dispatcher = delivery; RetryPolicy = retry), **Open/Closed** (new BackoffStrategy without changing RetryPolicy), **Dependency Inversion** (depend on MessageHandler, MessageQueue interfaces).
+
+### 14. [Battleship 🚢](src/main/java/com/springmicroservice/lowleveldesignproblems/battleship)
+Classic battleship game where two players take turns firing missiles at each other's fleet on a shared battlefield. Features square ships, spatial validation, turn management, fog-of-war views, and configurable strategies.
+*   **What it teaches:** Domain modeling for games (Coordinate, Cell, Ship, Battlefield), spatial validation (bounds, overlap), turn management, view abstraction with fog of war, and strategy-based extensibility.
+*   **Design Patterns:** **Strategy Pattern** (TargetingStrategy, GridDivisionStrategy, ShipPlacementStrategy), **Builder** (GameBuilder), **Value Object** (Coordinate, FireResult), **Repository Pattern** (GameRepository, PlayerRepository).
+*   **SOLID Principles:** **Single Responsibility** (Game = orchestration; Battlefield = grid; TurnManager = turns), **Open/Closed** (new targeting/placement strategies without touching core), **Dependency Inversion** (depend on strategy interfaces, repository interfaces).
