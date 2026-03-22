@@ -4,6 +4,20 @@ Welcome to my LLD repo! If you're tired of boring, textbook explanations of desi
 
 I built this repository to practice, revise, and completely master Object-Oriented Design (OOD). Each folder here is a deep dive into a classic system design interview problem. No fluffy theory just hard-hitting Java code, strict design patterns, and solid architecture!
 
+---
+
+## 📘 [LLD Master Guide](LLD_MASTER_GUIDE.md) — How to Think & Excel at LLD
+
+**Stuck on clarification, inputs/outputs, or creating design guidelines?** The [LLD Master Guide](LLD_MASTER_GUIDE.md) is a comprehensive meta-guide that teaches you:
+- **What questions to ask** in interviews (and to yourself) for any LLD problem
+- **How to decide inputs/outputs** using a systematic framework
+- **How to create detailed design guidelines** from vague requirements
+- **Domain-specific question banks** for games, booking, payment, cache, queue, etc.
+- **Pattern recognition** — when to use Strategy, State, Observer, etc.
+- **Interview scripts**, time management, checklists, and practice strategies
+
+Use it as your reference to build the insight needed to excel at LLD interviews.
+
 ## ▶️ Running the Applications
 
 Several packages include a runnable main class. Use these Gradle tasks:
