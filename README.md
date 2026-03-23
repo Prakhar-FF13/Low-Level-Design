@@ -32,6 +32,7 @@ Several packages include a runnable main class. Use these Gradle tasks:
 | **Payment Gateway** | `./gradlew runPaymentgateway` |
 | **Message Queue** | `./gradlew runMessagequeue` |
 | **Battleship** | `./gradlew runBattleship` |
+| **Stock Broker** | `./gradlew runStockbroker` |
 
 ### Gradle Task Parameters Explained
 
@@ -139,3 +140,9 @@ Classic battleship game where two players take turns firing missiles at each oth
 *   **What it teaches:** Domain modeling for games (Coordinate, Cell, Ship, Battlefield), spatial validation (bounds, overlap), turn management, view abstraction with fog of war, and strategy-based extensibility.
 *   **Design Patterns:** **Strategy Pattern** (TargetingStrategy, GridDivisionStrategy, ShipPlacementStrategy), **Builder** (GameBuilder), **Value Object** (Coordinate, FireResult), **Repository Pattern** (GameRepository, PlayerRepository).
 *   **SOLID Principles:** **Single Responsibility** (Game = orchestration; Battlefield = grid; TurnManager = turns), **Open/Closed** (new targeting/placement strategies without touching core), **Dependency Inversion** (depend on strategy interfaces, repository interfaces).
+
+### 15. [Stock Broker 📈](src/main/java/com/springmicroservice/lowleveldesignproblems/stockbroker)
+A stock broker system where multiple exchanges (BSE, NSE) push price updates, and the broker displays the latest prices and stores historical data.
+*   **What it teaches:** Observer (Pub-Sub) pattern for decoupled producers and consumers, thread-safe data structures (CopyOnWriteArrayList, ConcurrentHashMap), exchange identity in updates, bounded historical storage.
+*   **Design Patterns:** **Observer / Pub-Sub** (ExchangePublisher, Subscriber), **Strategy** (extensible exchanges by implementing the interface).
+*   **SOLID Principles:** **Dependency Inversion** (exchanges and subscribers depend on interfaces), **Open/Closed** (add new exchanges without modifying subscribers).

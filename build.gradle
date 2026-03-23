@@ -52,7 +52,8 @@ def lldApps = [
 	'moviecms'       : 'com.springmicroservice.lowleveldesignproblems.moviecms.Main',
 	'paymentgateway' : 'com.springmicroservice.lowleveldesignproblems.paymentgateway.Main',
 	'messagequeue'   : 'com.springmicroservice.lowleveldesignproblems.messagequeue.Main',
-	'battleship'     : 'com.springmicroservice.lowleveldesignproblems.battleship.Main'
+	'battleship'     : 'com.springmicroservice.lowleveldesignproblems.battleship.Main',
+	'stockbroker'    : 'com.springmicroservice.lowleveldesignproblems.stockbroker.StockBrokerDemo'
 ]
 
 lldApps.each { name, mainClassName ->
