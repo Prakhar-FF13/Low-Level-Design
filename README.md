@@ -172,3 +172,11 @@ In-memory stock exchange with Spring REST: place, modify, and cancel orders; FIF
 *   **SOLID Principles:** **Dependency Inversion** (matching and trade services behind interfaces), **Single Responsibility** (exchange vs matching vs REST).
 
 See [stockexchange/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/stockexchange/README.md) and [DESIGN_GUIDELINE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/stockexchange/DESIGN_GUIDELINE.md). Run the whole Spring Boot app with `./gradlew bootRun`; APIs are documented in the package README.
+
+### 19. [Banking System 🏦](src/main/java/com/springmicroservice/lowleveldesignproblems/bankingsystem)
+In-memory banking with timestamped operations: accounts, transfers, top spenders, payments with **24h delayed cashback** (ordered before other events at the same millisecond), **account merge** with payment reassignment, and **historical balance** via ledger replay.
+*   **What it teaches:** Per-account ledgers with explicit **outgoing** on transfers/pays, **ports & adapters** for accounts and payments, **event sink** for audit, and **deterministic replay** for `getBalance` after merges.
+*   **Design Patterns:** **Repository Pattern**, **Dependency Inversion** (`EventPublisher`, repositories), **Facade-like** orchestration (`AccountsService` + `PaymentService`).
+*   **SOLID Principles:** **Dependency Inversion** (services depend on repository/event interfaces), **Single Responsibility** (domain vs payment/cashback vs merge), **Open/Closed** (swap in-memory stores for persistence).
+
+See [bankingsystem/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/bankingsystem/README.md) and [DESIGN_GUIDE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/bankingsystem/DESIGN_GUIDE.md). Run tests with `./gradlew test --tests "com.springmicroservice.lowleveldesignproblems.bankingsystem.**"` (no runnable `main` in this package yet).

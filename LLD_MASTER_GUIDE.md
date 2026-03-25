@@ -1157,6 +1157,7 @@ When you see these phrases, they usually need clarification:
 | Route Handler | Middleware order | Chain of Responsibility | Low |
 | Cricbuzz | Fan-out, filtering | Observer | Low |
 | Movie CMS | Cache hierarchy, filters | Composite, Chain, Strategy | Medium |
+| Banking System | Timestamp ordering, cashback vs other ops, merge + replay | Repository, Dependency Inversion, domain ledger | Medium (Optional-heavy API, `timeAt` replay) |
 
 Use this table to know where to focus your clarification and design for each problem type.
 
