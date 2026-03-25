@@ -32,7 +32,9 @@ Several packages include a runnable main class. Use these Gradle tasks:
 | **Payment Gateway** | `./gradlew runPaymentgateway` |
 | **Message Queue** | `./gradlew runMessagequeue` |
 | **Battleship** | `./gradlew runBattleship` |
+| **Chess** | `./gradlew runChess` |
 | **Stock Broker** | `./gradlew runStockbroker` |
+| **Stock Exchange** (Spring REST) | `./gradlew bootRun` |
 
 ### Gradle Task Parameters Explained
 
@@ -154,3 +156,19 @@ In-memory editor with add, backspace-style delete, and undo — service layer on
 *   **SOLID Principles:** **Single Responsibility** (buffer vs commands vs history vs service), clear boundaries for testing.
 
 See [texteditor/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/texteditor/README.md) and [DESIGN_GUIDELINE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/texteditor/DESIGN_GUIDELINE.md).
+
+### 17. [Chess ♟️](src/main/java/com/springmicroservice/lowleveldesignproblems/chess)
+Console chess on an 8×8 board with standard piece movement, alternating turns (White first), and moves as algebraic squares via a **`Move`** value object over **`Square`** coordinates.
+*   **What it teaches:** Board and piece modeling, legal-move validation hooks, turn flow, and modular packages (`models`, `game`, `io`) ready for richer rules and alternate UIs.
+*   **Design Patterns:** **Value Object** (`Move`, `Square`), domain-centric game orchestration.
+*   **SOLID Principles:** **Single Responsibility** (board vs game vs I/O), **Open/Closed** (extend rules without rewriting the core loop).
+
+See [chess/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/chess/README.md) and [DESIGN_GUIDE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/chess/DESIGN_GUIDE.md).
+
+### 18. [Stock Exchange 📊](src/main/java/com/springmicroservice/lowleveldesignproblems/stockexchange)
+In-memory stock exchange with Spring REST: place, modify, and cancel orders; FIFO matching at equal price; per-symbol order books; trades recorded with concurrency controls.
+*   **What it teaches:** Order-book modeling, **FIFO** matching strategy, async matching with injectable executors, per-symbol locking, and REST + validation as the adapter layer.
+*   **Design Patterns:** **Strategy Pattern** (`OrderMatchingStrategy`, `FifoOrderMatchingStrategy`), **Repository Pattern** (trades, order book abstraction), **Dependency Injection** (Spring config).
+*   **SOLID Principles:** **Dependency Inversion** (matching and trade services behind interfaces), **Single Responsibility** (exchange vs matching vs REST).
+
+See [stockexchange/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/stockexchange/README.md) and [DESIGN_GUIDELINE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/stockexchange/DESIGN_GUIDELINE.md). Run the whole Spring Boot app with `./gradlew bootRun`; APIs are documented in the package README.
