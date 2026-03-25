@@ -45,6 +45,7 @@ tasks.named('test') {
 
 // Helper to create runnable tasks for packages with main classes
 def lldApps = [
+	'chess'          : 'com.springmicroservice.lowleveldesignproblems.chess.Main',
 	'tictactoe'      : 'com.springmicroservice.lowleveldesignproblems.tictactoe.Main',
 	'parkinglot'     : 'com.springmicroservice.lowleveldesignproblems.parkinglot.ParkingLotApplication',
 	'ecommerce'      : 'com.springmicroservice.lowleveldesignproblems.ecommerce.Main',
