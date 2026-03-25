@@ -146,3 +146,11 @@ A stock broker system where multiple exchanges (BSE, NSE) push price updates, an
 *   **What it teaches:** Observer (Pub-Sub) pattern for decoupled producers and consumers, thread-safe data structures (CopyOnWriteArrayList, ConcurrentHashMap), exchange identity in updates, bounded historical storage.
 *   **Design Patterns:** **Observer / Pub-Sub** (ExchangePublisher, Subscriber), **Strategy** (extensible exchanges by implementing the interface).
 *   **SOLID Principles:** **Dependency Inversion** (exchanges and subscribers depend on interfaces), **Open/Closed** (add new exchanges without modifying subscribers).
+
+### 16. [Text Editor 📝](src/main/java/com/springmicroservice/lowleveldesignproblems/texteditor)
+In-memory editor with add, backspace-style delete, and undo — service layer only (no UI, no REST, no DB).
+*   **What it teaches:** Modeling a document + cursor, **Command** with **execute** and **undo**, LIFO history, and a small **Facade** as the public API.
+*   **Design Patterns:** **Command Pattern** (`InsertCommand`, `DeleteCommand`), **Facade** (`TextEditorService`).
+*   **SOLID Principles:** **Single Responsibility** (buffer vs commands vs history vs service), clear boundaries for testing.
+
+See [texteditor/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/texteditor/README.md) and [DESIGN_GUIDELINE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/texteditor/DESIGN_GUIDELINE.md).
