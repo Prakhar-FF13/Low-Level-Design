@@ -34,7 +34,7 @@ Several packages include a runnable main class. Use these Gradle tasks:
 | **Battleship** | `./gradlew runBattleship` |
 | **Chess** | `./gradlew runChess` |
 | **Stock Broker** | `./gradlew runStockbroker` |
-| **Stock Exchange** (Spring REST) | `./gradlew bootRun` |
+| **Stock Exchange** / **Splitwise** (Spring REST) | `./gradlew bootRun` |
 
 ### Gradle Task Parameters Explained
 
@@ -180,3 +180,11 @@ In-memory banking with timestamped operations: accounts, transfers, top spenders
 *   **SOLID Principles:** **Dependency Inversion** (services depend on repository/event interfaces), **Single Responsibility** (domain vs payment/cashback vs merge), **Open/Closed** (swap in-memory stores for persistence).
 
 See [bankingsystem/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/bankingsystem/README.md) and [DESIGN_GUIDE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/bankingsystem/DESIGN_GUIDE.md). Run tests with `./gradlew test --tests "com.springmicroservice.lowleveldesignproblems.bankingsystem.**"` (no runnable `main` in this package yet).
+
+### 20. [Splitwise 💸](src/main/java/com/springmicroservice/lowleveldesignproblems/splitwise)
+Expense sharing in **groups**: multiple payers per bill, **equal** or **percentage** splits, **net balances** per member, and **greedy settlement suggestions** (minimal cash transfers). **JPA + H2** persistence; intentionally **compact** (one `SplitwiseService`, one `SplitwiseController`, DTOs in one file) for interview-sized scope.
+*   **What it teaches:** Modeling payers vs owed shares, **BigDecimal** money rules, deriving balances from facts, greedy settlement, REST + validation.
+*   **Design Patterns:** **Repository Pattern** (Spring Data JPA), **Facade** (`SplitwiseService`), **DTO records** + centralized exception handling.
+*   **SOLID Principles:** **Single Responsibility** (service = rules, controller = HTTP), thin persistence layer.
+
+See [splitwise/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/splitwise/README.md) and [DESIGN_GUIDELINE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/splitwise/DESIGN_GUIDELINE.md). Run the app with `./gradlew bootRun`; APIs are under `/api/splitwise/...`.
