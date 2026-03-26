@@ -188,3 +188,11 @@ Expense sharing in **groups**: multiple payers per bill, **equal** or **percenta
 *   **SOLID Principles:** **Single Responsibility** (service = rules, controller = HTTP), thin persistence layer.
 
 See [splitwise/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/splitwise/README.md) and [DESIGN_GUIDELINE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/splitwise/DESIGN_GUIDELINE.md). Run the app with `./gradlew bootRun`; APIs are under `/api/splitwise/...`.
+
+### 21. [Cap Table Generator 📑](src/main/java/com/springmicroservice/lowleveldesignproblems/captable)
+Replay **dated** transactions (**share issuance**, **stock split**, **company valuation**) and produce a **cap table as of a date**: stakeholder shares, ownership %, and stake value from the **latest valuation** on or before that date (plain Java library, no REST).
+*   **What it teaches:** Event replay, **total ordering** (including same-day rules), **split vs issuance** semantics, **`BigDecimal`** for money, **`long`** + exact arithmetic for shares.
+*   **Design Patterns:** **Polymorphic transactions** (`Transaction` + concrete types), **service façade** (`CapTableGenerator`).
+*   **SOLID Principles:** **Single Responsibility** (models vs replay logic), small immutable row DTO for output.
+
+See [captable/README.md](src/main/java/com/springmicroservice/lowleveldesignproblems/captable/README.md) and [DESIGN_GUIDELINE.md](src/main/java/com/springmicroservice/lowleveldesignproblems/captable/DESIGN_GUIDELINE.md). Run tests with `./gradlew test --tests "com.springmicroservice.lowleveldesignproblems.captable.*"`.
